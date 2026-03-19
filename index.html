@@ -182,7 +182,7 @@
             overflow: hidden;
         }
 
-        #canvas {
+        #globeViz {
             width: 100%;
             height: 100%;
             display: block;
@@ -632,7 +632,7 @@
 
         <!-- GLOBE -->
         <div class="globe-container">
-            <canvas id="canvas"></canvas>
+            <div id="globeViz"></div>
             <div class="globe-info">
                 <div>마우스: 회전 | 스크롤: 줌</div>
                 <div style="margin-top: 4px; color: #666;">금속을 선택하면 산지가 표시됩니다</div>
@@ -714,7 +714,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="stories.js"></script>
 
@@ -1401,300 +1401,75 @@
         };
 
         // GLOBE SETUP
-        let scene, camera, renderer, globeGroup, particles, raycaster, mouse, selectedMetal = null;
-        let controls, chart;
+        let globe, selectedMetal = null;
+        let chart;
 
         function initGlobe() {
-            const canvas = document.getElementById('canvas');
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a0f);
+            const container = document.getElementById('globeViz');
 
-            camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
-            camera.position.z = 2.5;
+            globe = Globe()(container)
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+                .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+                .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+                .showAtmosphere(true)
+                .atmosphereColor('#3a228a')
+                .atmosphereAltitude(0.25)
+                .pointsData([])
+                .pointLat('lat')
+                .pointLng('lng')
+                .pointColor('color')
+                .pointAltitude(0.06)
+                .pointRadius(0.4)
+                .pointLabel(d => `<div style="background:rgba(10,10,15,0.9);padding:8px 12px;border-radius:6px;border:1px solid #444;font-size:12px;color:#fff;font-family:-apple-system,sans-serif;">
+                    <div style="font-weight:700;">${d.name}</div>
+                    <div style="color:#999;font-size:11px;">${d.country} · ${d.pct}%</div>
+                </div>`)
+                .labelsData([])
+                .labelLat('lat')
+                .labelLng('lng')
+                .labelText('name')
+                .labelSize(0.6)
+                .labelDotRadius(0.3)
+                .labelColor('color')
+                .labelResolution(2)
+                .labelAltitude(0.01);
 
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            // Set initial view point (shows Asia/Europe)
+            globe.pointOfView({ lat: 30, lng: 50, altitude: 2.2 });
 
-            globeGroup = new THREE.Group();
-            globeGroup.rotation.x = -0.3;
-            globeGroup.rotation.y = -1.2;
-            scene.add(globeGroup);
-
-            // Create continent points
-            createGlobeParticles();
-
-            // Mouse controls
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            canvas.addEventListener('mousemove', onMouseMove);
-            canvas.addEventListener('click', onCanvasClick);
-            canvas.addEventListener('wheel', onMouseWheel, false);
-
-            let isDragging = false;
-            let previousMousePosition = { x: 0, y: 0 };
-
-            canvas.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                previousMousePosition = { x: e.clientX, y: e.clientY };
-            });
-
-            canvas.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    const deltaX = e.clientX - previousMousePosition.x;
-                    const deltaY = e.clientY - previousMousePosition.y;
-                    globeGroup.rotation.y += deltaX * 0.01;
-                    globeGroup.rotation.x += deltaY * 0.01;
-                    previousMousePosition = { x: e.clientX, y: e.clientY };
-                }
-            });
-
-            canvas.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-
-            window.addEventListener('resize', onWindowResize);
-
-            animate();
-        }
-
-        function createGlobeParticles() {
-            // Detailed continent polygons for realistic coastlines
-            // Each polygon: array of [lat, lng] boundary points
-            const landPolygons = [
-              // NORTH AMERICA (main)
-              [[70,-165],[72,-160],[71,-155],[70,-145],[68,-140],[64,-140],[60,-140],[57,-135],[55,-130],[48,-125],[42,-124],[37,-122],[32,-117],[28,-112],[25,-110],[22,-105],[18,-97],[16,-92],[18,-88],[20,-87],[22,-85],[25,-83],[27,-80],[30,-81],[31,-85],[29,-89],[28,-94],[28,-97],[30,-97],[35,-95],[38,-90],[40,-85],[43,-79],[44,-73],[45,-67],[47,-60],[50,-58],[52,-55],[55,-60],[56,-65],[58,-70],[56,-80],[52,-80],[50,-90],[50,-95],[53,-100],[55,-105],[57,-110],[58,-120],[60,-140],[63,-145],[65,-160],[68,-163],[70,-165]],
-              // SOUTH AMERICA
-              [[-5,-80],[-2,-79],[2,-77],[5,-76],[8,-72],[12,-72],[12,-70],[10,-67],[8,-63],[5,-52],[0,-50],[-2,-44],[-5,-35],[-8,-35],[-12,-38],[-15,-39],[-18,-40],[-22,-41],[-25,-48],[-30,-50],[-33,-52],[-38,-58],[-42,-63],[-46,-67],[-50,-70],[-54,-70],[-55,-68],[-52,-65],[-48,-65],[-44,-65],[-42,-60],[-38,-57],[-35,-54],[-30,-50],[-25,-48],[-22,-44],[-18,-40],[-15,-39],[-12,-38],[-10,-40],[-8,-45],[-5,-50],[-2,-55],[-1,-60],[-2,-65],[-5,-75],[-5,-80]],
-              // EUROPE
-              [[38,-10],[39,-8],[37,-6],[36,-5],[38,-1],[40,0],[43,3],[44,8],[46,7],[47,10],[48,15],[50,15],[52,14],[54,10],[55,8],[57,10],[58,12],[56,16],[55,20],[56,24],[58,25],[60,25],[62,25],[64,28],[66,26],[68,20],[70,25],[71,28],[70,30],[68,35],[65,30],[63,30],[60,30],[58,28],[55,24],[52,22],[50,20],[48,18],[46,16],[44,12],[43,10],[42,5],[40,2],[38,0],[38,-10]],
-              // AFRICA
-              [[37,-10],[36,-5],[35,-1],[33,10],[32,13],[30,32],[28,33],[25,33],[22,37],[18,40],[14,42],[12,44],[10,45],[5,42],[2,10],[0,10],[-2,12],[-5,13],[-8,14],[-10,15],[-12,17],[-15,18],[-18,20],[-22,22],[-25,25],[-28,28],[-30,30],[-33,28],[-35,20],[-34,18],[-30,15],[-25,14],[-20,12],[-15,12],[-10,15],[-5,12],[0,10],[2,10],[5,5],[6,1],[5,-5],[4,-8],[5,-10],[8,-14],[10,-16],[12,-17],[15,-17],[18,-16],[20,-15],[25,-14],[28,-13],[30,-10],[33,-8],[35,-5],[37,-10]],
-              // ASIA (main)
-              [[42,30],[45,35],[48,40],[50,50],[52,55],[55,60],[58,60],[60,65],[62,70],[65,75],[68,80],[70,90],[72,100],[72,110],[70,120],[68,130],[65,135],[62,140],[60,145],[58,150],[55,155],[52,160],[50,158],[48,155],[45,150],[43,145],[42,142],[40,135],[38,130],[36,128],[35,126],[33,130],[30,122],[28,120],[25,118],[22,114],[20,110],[18,105],[15,100],[12,100],[10,98],[8,100],[5,103],[2,105],[1,110],[-2,115],[-5,120],[-8,115],[-8,110],[-5,106],[-2,104],[0,100],[5,98],[8,95],[10,93],[12,90],[15,80],[18,73],[20,70],[22,62],[25,55],[28,50],[30,48],[33,45],[35,40],[38,38],[40,35],[42,30]],
-              // AUSTRALIA
-              [[-12,130],[-12,135],[-14,137],[-16,140],[-18,142],[-20,146],[-22,149],[-25,152],[-28,153],[-30,153],[-33,152],[-35,150],[-37,148],[-38,145],[-37,140],[-35,137],[-34,135],[-32,133],[-30,131],[-28,128],[-26,125],[-24,122],[-22,118],[-20,115],[-17,115],[-15,120],[-13,125],[-12,130]],
-              // JAPAN
-              [[32,130],[34,132],[36,136],[38,140],[40,140],[42,142],[44,144],[45,145],[44,143],[42,141],[40,140],[38,137],[36,133],[34,131],[32,130]],
-              // INDONESIA (Java/Sumatra)
-              [[-6,105],[-5,107],[-6,110],[-7,112],[-8,114],[-8,116],[-7,118],[-6,115],[-5,112],[-6,108],[-6,105]],
-              // UK
-              [[50,-6],[51,-3],[52,0],[53,0],[54,-2],[55,-3],[56,-5],[57,-5],[58,-3],[59,-3],[58,-5],[56,-6],[54,-5],[52,-5],[50,-6]],
-              // NEW ZEALAND
-              [[-35,173],[-37,175],[-39,177],[-41,175],[-43,172],[-45,170],[-46,168],[-44,168],[-42,171],[-40,174],[-38,176],[-35,173]],
-              // GREENLAND
-              [[60,-45],[63,-42],[66,-38],[70,-30],[72,-25],[74,-20],[76,-18],[78,-20],[80,-25],[82,-30],[83,-40],[82,-50],[80,-55],[78,-60],[75,-58],[72,-55],[70,-50],[68,-52],[65,-50],[62,-48],[60,-45]],
-              // MADAGASCAR
-              [[-12,49],[-15,48],[-18,44],[-22,44],[-25,47],[-22,48],[-18,49],[-15,50],[-12,49]],
-              // MIDDLE EAST (Arabian Peninsula)
-              [[30,35],[28,38],[25,40],[22,42],[18,44],[14,44],[12,45],[13,48],[15,52],[18,56],[22,58],[25,56],[28,50],[30,48],[30,35]],
-              // INDIA
-              [[30,70],[28,72],[25,68],[22,70],[20,72],[18,73],[15,75],[12,77],[10,78],[8,77],[10,76],[12,80],[15,80],[18,78],[20,76],[22,75],[25,82],[28,85],[30,82],[32,78],[30,70]],
-              // KOREA
-              [[34,126],[35,127],[37,127],[38,128],[38,126],[36,126],[34,126]],
-              // SCANDINAVIA (Norway/Sweden/Finland supplement)
-              [[58,5],[60,5],[62,5],[64,10],[66,14],[68,16],[70,20],[70,25],[68,28],[66,26],[64,24],[62,20],[60,18],[58,12],[58,5]]
-            ];
-
-            function isPointInPolygon(lat, lng, polygon) {
-                let inside = false;
-                for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-                    const yi = polygon[i][0], xi = polygon[i][1];
-                    const yj = polygon[j][0], xj = polygon[j][1];
-                    const intersect = ((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-                    if (intersect) inside = !inside;
-                }
-                return inside;
-            }
-
-            function isLand(lat, lng) {
-                for (const poly of landPolygons) {
-                    if (isPointInPolygon(lat, lng, poly)) return true;
-                }
-                return false;
-            }
-
-            const positions = [];
-            const colors = [];
-            const landColor = [0.55, 0.58, 0.72];
-            const oceanColor = [0.12, 0.13, 0.22];
-
-            // Dense grid sampling for land
-            const step = 1.8;
-            for (let lat = -85; lat <= 85; lat += step) {
-                const latRad = lat * Math.PI / 180;
-                const circumference = Math.cos(latRad);
-                const lngStep = step / Math.max(circumference, 0.2);
-                for (let lng = -180; lng < 180; lng += lngStep) {
-                    if (isLand(lat, lng)) {
-                        const jitterLat = lat + (Math.random() - 0.5) * step * 0.6;
-                        const jitterLng = lng + (Math.random() - 0.5) * lngStep * 0.6;
-                        const phi = (90 - jitterLat) * Math.PI / 180;
-                        const theta = (jitterLng + 180) * Math.PI / 180;
-                        positions.push(Math.sin(phi)*Math.cos(theta), Math.cos(phi), Math.sin(phi)*Math.sin(theta));
-                        const brightness = 0.5 + Math.random() * 0.25;
-                        colors.push(landColor[0]*brightness*1.6, landColor[1]*brightness*1.6, landColor[2]*brightness*1.6);
-                    }
-                }
-            }
-
-            // Sparse ocean dots (subtle grid feel)
-            const oceanStep = 8;
-            for (let lat = -80; lat <= 80; lat += oceanStep) {
-                const latRad = lat * Math.PI / 180;
-                const circumference = Math.cos(latRad);
-                const lngStep = oceanStep / Math.max(circumference, 0.3);
-                for (let lng = -180; lng < 180; lng += lngStep) {
-                    if (!isLand(lat, lng)) {
-                        const phi = (90 - lat) * Math.PI / 180;
-                        const theta = (lng + 180) * Math.PI / 180;
-                        positions.push(Math.sin(phi)*Math.cos(theta), Math.cos(phi), Math.sin(phi)*Math.sin(theta));
-                        colors.push(oceanColor[0], oceanColor[1], oceanColor[2]);
-                    }
-                }
-            }
-
-            const geometry = new THREE.BufferGeometry();
-            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-
-            const material = new THREE.PointsMaterial({
-                size: 0.018,
-                sizeAttenuation: true,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.9
-            });
-            particles = new THREE.Points(geometry, material);
-            globeGroup.add(particles);
-
-            // Atmosphere glow sphere
-            const atmosGeometry = new THREE.SphereGeometry(1.02, 64, 64);
-            const atmosMaterial = new THREE.ShaderMaterial({
-                vertexShader: `
-                    varying vec3 vNormal;
-                    void main() {
-                        vNormal = normalize(normalMatrix * normal);
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                fragmentShader: `
-                    varying vec3 vNormal;
-                    void main() {
-                        float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
-                        gl_FragColor = vec4(0.3, 0.4, 0.8, 1.0) * intensity * 0.6;
-                    }
-                `,
-                blending: THREE.AdditiveBlending,
-                side: THREE.BackSide,
-                transparent: true
-            });
-            const atmosphere = new THREE.Mesh(atmosGeometry, atmosMaterial);
-            globeGroup.add(atmosphere);
-
-            // Subtle inner sphere (ocean base)
-            const sphereGeo = new THREE.SphereGeometry(0.995, 64, 64);
-            const sphereMat = new THREE.MeshBasicMaterial({ color: 0x080810, transparent: true, opacity: 0.6 });
-            const innerSphere = new THREE.Mesh(sphereGeo, sphereMat);
-            globeGroup.add(innerSphere);
-        }
-
-        function addMinePins(locations) {
-            // Remove old pins
-            globeGroup.children.forEach(child => {
-                if (child.userData.isPin) {
-                    globeGroup.remove(child);
-                }
-            });
-
-            // Add new pins
-            locations.forEach((loc, idx) => {
-                const phi = (90 - loc.lat) * Math.PI / 180;
-                const theta = (loc.lng + 180) * Math.PI / 180;
-
-                const x = Math.sin(phi) * Math.cos(theta) * 1.05;
-                const y = Math.cos(phi) * 1.05;
-                const z = Math.sin(phi) * Math.sin(theta) * 1.05;
-
-                const pinGeometry = new THREE.SphereGeometry(0.06, 8, 8);
-                const pinMaterial = new THREE.MeshBasicMaterial({ color: 0xff6b00 });
-                const pin = new THREE.Mesh(pinGeometry, pinMaterial);
-                pin.position.set(x, y, z);
-                pin.userData.isPin = true;
-                pin.userData.location = loc;
-
-                globeGroup.add(pin);
-
-                // Add glow effect
-                pin.scale.set(1, 1, 1);
-                const startScale = 1;
-                const maxScale = 1.5;
-                const duration = 800 + idx * 200;
-
-                const startTime = Date.now();
-                const animatePin = () => {
-                    const elapsed = (Date.now() - startTime) % duration;
-                    const progress = elapsed / duration;
-                    const scale = startScale + (maxScale - startScale) * Math.abs(Math.sin(progress * Math.PI));
-                    pin.scale.set(scale, scale, scale);
-
-                    if (pin.parent) {
-                        requestAnimationFrame(animatePin);
-                    }
-                };
-                animatePin();
+            // Handle resize
+            window.addEventListener('resize', () => {
+                globe.width(container.clientWidth);
+                globe.height(container.clientHeight);
             });
         }
 
-        function onMouseMove(event) {
-            const canvas = document.getElementById('canvas');
-            mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
-            mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
-        }
+        function addMinePins(locations, categoryColor) {
+            const pointsData = locations.map(loc => ({
+                lat: loc.lat,
+                lng: loc.lng,
+                name: loc.name,
+                country: loc.country,
+                pct: loc.pct,
+                color: categoryColor
+            }));
 
-        function onCanvasClick(event) {
-            // If clicking empty globe area, close panel
-            const rect = event.currentTarget.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const clickY = event.clientY - rect.top;
+            const labelsData = locations.map(loc => ({
+                lat: loc.lat,
+                lng: loc.lng,
+                name: `${loc.name} (${loc.pct}%)`,
+                color: categoryColor
+            }));
 
-            const canvas = document.getElementById('canvas');
-            const raycasterFromClick = new THREE.Raycaster();
-            const mouseFromClick = new THREE.Vector2();
-            mouseFromClick.x = (clickX / canvas.clientWidth) * 2 - 1;
-            mouseFromClick.y = -(clickY / canvas.clientHeight) * 2 + 1;
-            raycasterFromClick.setFromCamera(mouseFromClick, camera);
+            globe.pointsData(pointsData);
+            globe.labelsData(labelsData);
 
-            const pinsToCheck = globeGroup.children.filter(c => c.userData.isPin);
-            const intersects = raycasterFromClick.intersectObjects(pinsToCheck);
-
-            if (intersects.length === 0) {
-                closePanel();
+            // Animate to first location
+            if (locations.length > 0) {
+                globe.pointOfView({ lat: locations[0].lat, lng: locations[0].lng, altitude: 2.0 }, 1000);
             }
         }
 
-        function onMouseWheel(event) {
-            event.preventDefault();
-            const zoomSpeed = 0.1;
-            camera.position.z += event.deltaY > 0 ? zoomSpeed : -zoomSpeed;
-            camera.position.z = Math.max(1, Math.min(5, camera.position.z));
-        }
-
-        function onWindowResize() {
-            const canvas = document.getElementById('canvas');
-            const width = canvas.clientWidth;
-            const height = canvas.clientHeight;
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            globeGroup.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        }
 
         // UI FUNCTIONS
         function buildSidebar() {
@@ -1911,7 +1686,11 @@
             }
 
             // Add mine pins to globe
-            addMinePins(metal.locations);
+            const categoryColors = {
+                ferrous: '#3C3489', heavy: '#D85A30', light: '#0F6E56',
+                precious: '#EF9F27', rare: '#534AB7', ree: '#1A8A7A', metalloid: '#888780'
+            };
+            addMinePins(metal.locations, categoryColors[metal.category] || '#ffffff');
         }
 
         function closePanel() {
@@ -1919,11 +1698,8 @@
             document.querySelectorAll('.metal-item').forEach(item => {
                 item.classList.remove('selected');
             });
-            globeGroup.children.forEach(child => {
-                if (child.userData.isPin) {
-                    globeGroup.remove(child);
-                }
-            });
+            globe.pointsData([]);
+            globe.labelsData([]);
             selectedMetal = null;
         }
 
@@ -1948,13 +1724,6 @@
             });
 
             document.getElementById('panelCloseBtn').addEventListener('click', closePanel);
-
-            // Close panel when clicking on empty area
-            document.getElementById('canvas').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('canvas')) {
-                    closePanel();
-                }
-            });
         });
     </script>
 </body>
