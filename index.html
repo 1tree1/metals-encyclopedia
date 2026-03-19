@@ -1367,7 +1367,7 @@
             const container = document.getElementById('globeViz');
 
             globe = Globe()(container)
-                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                 .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
                 .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
                 .showAtmosphere(true)
@@ -1383,15 +1383,16 @@
                     <div style="font-weight:700;">${d.name}</div>
                     <div style="color:#999;font-size:11px;">${d.country} · ${d.pct}%</div>
                 </div>`)
-                .labelsData([])
-                .labelLat('lat')
-                .labelLng('lng')
-                .labelText('name')
-                .labelSize(0.6)
-                .labelDotRadius(0.3)
-                .labelColor('color')
-                .labelResolution(2)
-                .labelAltitude(0.01);
+                .htmlElementsData([])
+                .htmlLat('lat')
+                .htmlLng('lng')
+                .htmlAltitude(0.02)
+                .htmlElement(d => {
+                    const el = document.createElement('div');
+                    el.style.cssText = 'color:' + d.color + ';font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-shadow:0 0 6px rgba(0,0,0,0.9),0 0 3px rgba(0,0,0,0.7);white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%);padding:2px 6px;background:rgba(0,0,0,0.45);border-radius:3px;';
+                    el.textContent = d.name;
+                    return el;
+                });
 
             // Set initial view point (shows Asia/Europe)
             globe.pointOfView({ lat: 30, lng: 50, altitude: 2.2 });
@@ -1413,7 +1414,7 @@
                 color: categoryColor
             }));
 
-            const labelsData = locations.map(loc => ({
+            const htmlData = locations.map(loc => ({
                 lat: loc.lat,
                 lng: loc.lng,
                 name: `${loc.name} (${loc.pct}%)`,
@@ -1421,7 +1422,7 @@
             }));
 
             globe.pointsData(pointsData);
-            globe.labelsData(labelsData);
+            globe.htmlElementsData(htmlData);
 
             // Animate to first location
             if (locations.length > 0) {
@@ -1611,7 +1612,7 @@
                 item.classList.remove('selected');
             });
             globe.pointsData([]);
-            globe.labelsData([]);
+            globe.htmlElementsData([]);
 
             // Resize globe after panel closes
             setTimeout(() => {
