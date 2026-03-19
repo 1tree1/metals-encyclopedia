@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>금속 백과사전 - Interactive Metals Encyclopedia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #0a0a0f;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background-color: #131320;
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #222;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #1a1a22;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .search-input::placeholder {
+            color: #666;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #666;
+            background-color: #1f1f2a;
+        }
+
+        .sidebar-content {
+            overflow-y: auto;
+            flex: 1;
+            padding: 12px;
+        }
+
+        .accordion-group {
+            margin-bottom: 8px;
+        }
+
+        .accordion-header {
+            padding: 10px 12px;
+            background-color: #1a1a22;
+            border: 1px solid #222;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .accordion-header:hover {
+            background-color: #202028;
+        }
+
+        .accordion-header.active {
+            color: #fff;
+        }
+
+        .accordion-arrow {
+            display: inline-block;
+            transition: transform 0.3s;
+            font-size: 12px;
+        }
+
+        .accordion-header.active .accordion-arrow {
+            transform: rotate(90deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .accordion-content.active {
+            max-height: 500px;
+        }
+
+        .metal-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background-color: #1a1a22;
+            border-left: 3px solid #666;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .metal-item:hover {
+            background-color: #202028;
+            transform: translateX(4px);
+        }
+
+        .metal-item.selected {
+            background-color: #2a2a32;
+            color: #fff;
+        }
+
+        .metal-symbol {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .metal-names {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .metal-name-ko {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .metal-name-en {
+            font-size: 10px;
+            color: #999;
+        }
+
+        /* GLOBE CONTAINER */
+        .globe-container {
+            flex: 1;
+            background-color: #0a0a0f;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .globe-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(10, 10, 15, 0.8);
+            border: 1px solid #333;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #999;
+            backdrop-filter: blur(10px);
+        }
+
+        /* SIDE PANEL */
+        .info-panel {
+            width: 0;
+            background-color: #131320;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            transition: width 0.3s ease-out;
+            position: relative;
+        }
+
+        .info-panel.open {
+            width: 400px;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            background-color: #131320;
+            z-index: 10;
+        }
+
+        .panel-close-btn {
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .panel-close-btn:hover {
+            color: #fff;
+        }
+
+        .panel-title {
+            flex: 1;
+        }
+
+        .metal-title-ko {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .metal-title-en {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .metal-symbol-large {
+            width: 50px;
+            height: 50px;
+            background-color: #1a1a22;
+            border: 1px solid #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .metal-category-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #2a2a32;
+            border-radius: 3px;
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .panel-content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #222;
+        }
+
+        .ore-info {
+            background-color: #1a1a22;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .ore-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .ore-type {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .locations-list {
+            font-size: 12px;
+        }
+
+        .location-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-item:last-child {
+            border-bottom: none;
+        }
+
+        .location-name {
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .location-country {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .location-pct {
+            color: #666;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .property-card {
+            background-color: #1a1a22;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 2px solid #3C3489;
+        }
+
+        .property-label {
+            font-size: 10px;
+            color: #999;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .property-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            word-break: break-word;
+        }
+
+        .bars-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .bar-item {
+            font-size: 12px;
+        }
+
+        .bar-label {
+            margin-bottom: 6px;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bar-label-name {
+            font-weight: 500;
+        }
+
+        .bar-label-value {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .bar-container {
+            height: 6px;
+            background-color: #1a1a22;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3C3489, #534AB7);
+            border-radius: 3px;
+        }
+
+        .process-flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+
+        .process-step {
+            background-color: #1a1a22;
+            padding: 6px 10px;
+            border-radius: 3px;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .process-arrow {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .carbon-gauge {
+            background-color: #1a1a22;
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        .carbon-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .carbon-bar {
+            height: 8px;
+            background-color: #0a0a0f;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .carbon-fill {
+            height: 100%;
+            background-color: #4ade80;
+            border-radius: 4px;
+        }
+
+        .carbon-label {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .applications-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .app-chip {
+            background-color: #1a1a22;
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: #999;
+            border: 1px solid #333;
+        }
+
+        .resources-info {
+            font-size: 12px;
+            background-color: #1a1a22;
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        .resource-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .resource-row:last-child {
+            border-bottom: none;
+        }
+
+        .resource-label {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .resource-value {
+            color: #fff;
+            text-align: right;
+        }
+
+        #resourceChart {
+            max-height: 300px;
+        }
+
+        .story-section {
+            background-color: #1a1a22;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #ccc;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .story-content {
+            white-space: pre-wrap;
+        }
+
+        /* CATEGORY COLORS */
+        .ferrous { --color: #3C3489; }
+        .heavy { --color: #D85A30; }
+        .light { --color: #0F6E56; }
+        .precious { --color: #EF9F27; }
+        .rare { --color: #534AB7; }
+        .ree { --color: #1A8A7A; }
+        .metalloid { --color: #888780; }
+
+        .metal-item.ferrous { border-left-color: #3C3489; }
+        .metal-item.heavy { border-left-color: #D85A30; }
+        .metal-item.light { border-left-color: #0F6E56; }
+        .metal-item.precious { border-left-color: #EF9F27; }
+        .metal-item.rare { border-left-color: #534AB7; }
+        .metal-item.ree { border-left-color: #1A8A7A; }
+        .metal-item.metalloid { border-left-color: #888780; }
+
+        .property-card.ferrous { border-left-color: #3C3489; }
+        .property-card.heavy { border-left-color: #D85A30; }
+        .property-card.light { border-left-color: #0F6E56; }
+        .property-card.precious { border-left-color: #EF9F27; }
+        .property-card.rare { border-left-color: #534AB7; }
+        .property-card.ree { border-left-color: #1A8A7A; }
+        .property-card.metalloid { border-left-color: #888780; }
+
+        .bar-fill.ferrous { background: linear-gradient(90deg, #3C3489, #5a4dbd); }
+        .bar-fill.heavy { background: linear-gradient(90deg, #D85A30, #ff7a51); }
+        .bar-fill.light { background: linear-gradient(90deg, #0F6E56, #1a9a7a); }
+        .bar-fill.precious { background: linear-gradient(90deg, #EF9F27, #ffc451); }
+        .bar-fill.rare { background: linear-gradient(90deg, #534AB7, #7865d9); }
+        .bar-fill.ree { background: linear-gradient(90deg, #1A8A7A, #2bb89a); }
+        .bar-fill.metalloid { background: linear-gradient(90deg, #888780, #aaa89a); }
+
+        /* Scrollbar styling */
+        .sidebar-content::-webkit-scrollbar,
+        .info-panel::-webkit-scrollbar,
+        .story-section::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track,
+        .info-panel::-webkit-scrollbar-track,
+        .story-section::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb,
+        .info-panel::-webkit-scrollbar-thumb,
+        .story-section::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb:hover,
+        .info-panel::-webkit-scrollbar-thumb:hover,
+        .story-section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            pointer-events: none;
+            z-index: 100;
+            white-space: nowrap;
+            border: 1px solid #333;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">금속 백과사전</div>
+                <input type="text" class="search-input" id="searchInput" placeholder="금속 검색...">
+            </div>
+            <div class="sidebar-content" id="sidebarContent">
+                <!-- Accordion groups will be populated here -->
+            </div>
+        </div>
+
+        <!-- GLOBE -->
+        <div class="globe-container">
+            <canvas id="canvas"></canvas>
+            <div class="globe-info">
+                <div>마우스: 회전 | 스크롤: 줌</div>
+                <div style="margin-top: 4px; color: #666;">금속을 선택하면 산지가 표시됩니다</div>
+            </div>
+        </div>
+
+        <!-- INFO PANEL -->
+        <div class="info-panel" id="infoPanel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <div class="metal-title-ko" id="panelMetalNameKo"></div>
+                    <div class="metal-title-en" id="panelMetalNameEn"></div>
+                    <div class="metal-category-tag" id="panelMetalCategory"></div>
+                </div>
+                <div class="metal-symbol-large" id="panelMetalSymbol"></div>
+                <button class="panel-close-btn" id="panelCloseBtn">✕</button>
+            </div>
+            <div class="panel-content">
+                <!-- Ore Information -->
+                <div class="section">
+                    <div class="section-title">원석 정보</div>
+                    <div class="ore-info">
+                        <div class="ore-name" id="oreNameKo"></div>
+                        <div class="ore-type" id="oreType"></div>
+                    </div>
+                </div>
+
+                <!-- Mining Locations -->
+                <div class="section">
+                    <div class="section-title">산지 정보 (주요 생산국)</div>
+                    <div class="locations-list" id="locationsList"></div>
+                </div>
+
+                <!-- Properties -->
+                <div class="section">
+                    <div class="section-title">물질 특성</div>
+                    <div class="properties-grid" id="propertiesGrid"></div>
+                </div>
+
+                <!-- Comparative Bars -->
+                <div class="section">
+                    <div class="section-title">상대 비교</div>
+                    <div class="bars-grid" id="barsGrid"></div>
+                </div>
+
+                <!-- Processing -->
+                <div class="section">
+                    <div class="section-title">가공 프로세스</div>
+                    <div class="process-flow" id="processList"></div>
+                </div>
+
+                <!-- Environmental -->
+                <div class="section">
+                    <div class="section-title">환경 정보 (탄소발자국)</div>
+                    <div class="carbon-gauge" id="carbonGauge"></div>
+                </div>
+
+                <!-- Applications -->
+                <div class="section">
+                    <div class="section-title">활용 정보</div>
+                    <div class="applications-chips" id="appsList"></div>
+                </div>
+
+                <!-- Resources Data -->
+                <div class="section">
+                    <div class="section-title">자원 데이터</div>
+                    <div class="resources-info" id="resourcesInfo"></div>
+                    <canvas id="resourceChart" style="margin-top: 16px;"></canvas>
+                </div>
+
+                <!-- Story -->
+                <div class="section">
+                    <div class="section-title">스토리</div>
+                    <div class="story-section" id="storySection">
+                        <div class="story-content">스토리 로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="stories.js"></script>
+
+    <script>
+        // METALS DATA
+        const METALS_DATA = [
+            {
+                id: 'fe', name: '순철', nameEn: 'Pure Iron', symbol: 'Fe', category: 'ferrous',
+                ore: {name: '적철석/자철석', type: '산화광물'},
+                locations: [
+                    {name: '호주 필바라', country: '호주', lat: -22.3, lng: 118.2, pct: 37},
+                    {name: '브라질 카라자스', country: '브라질', lat: -6.1, lng: -50.0, pct: 17},
+                    {name: '중국', country: '중국', lat: 36.0, lng: 114.0, pct: 14}
+                ],
+                properties: {
+                    density: '7.87 g/cm³', meltingPoint: '1,538°C', tensileStrength: '~400 MPa',
+                    conductivity: '10 MS/m', hardness: '80 HV', crystalStructure: 'BCC'
+                },
+                bars: {strength: 18, corrosionRes: 10, conductivity: 55, lightweight: 15, heatRes: 60},
+                process: ['채광·발파', '파쇄·선별', '자력/비중 선별', '소결(펠릿화)', '고로 제련(1,400°C+)', '정련·주조'],
+                carbon: 2.75,
+                applications: ['변압기 코어', '전자석', '촉매', '합금 기반 재료'],
+                resources: {reserves: '850억 톤', mined: '~200억 톤', price: '$100-120/톤 (철광석)'}
+            },
+            {
+                id: 'carbon-steel', name: '탄소강', nameEn: 'Carbon Steel', symbol: 'Fe+C', category: 'ferrous',
+                ore: {name: '적철석(Fe₂O₃)', type: '산화광물 → 합금'},
+                locations: [
+                    {name: '호주 필바라', country: '호주', lat: -22.3, lng: 118.2, pct: 37},
+                    {name: '브라질 카라자스', country: '브라질', lat: -6.1, lng: -50.0, pct: 17},
+                    {name: '중국 허베이', country: '중국', lat: 38.0, lng: 115.0, pct: 14}
+                ],
+                properties: {
+                    density: '7.85 g/cm³', meltingPoint: '1,370-1,510°C', tensileStrength: '400-2,500 MPa',
+                    conductivity: '6.5 MS/m', hardness: '120-700 HB', crystalStructure: 'BCC/펄라이트'
+                },
+                bars: {strength: 80, corrosionRes: 15, conductivity: 45, lightweight: 15, heatRes: 55},
+                process: ['철광석 채광', '고로 제련 (선철)', '전로 정련 (BOF)', '합금 원소 첨가', '연속주조', '열간/냉간 압연'],
+                carbon: 2.8,
+                applications: ['건축 구조재', '철근', '파이프', '철도 레일', '자동차 부품'],
+                resources: {reserves: '850억 톤 (철광석)', mined: '~320억 톤(강철 누적)', price: '$600-800/톤'}
+            },
+            {
+                id: 'alloy-steel', name: '합금강', nameEn: 'Alloy Steel', symbol: 'Fe合', category: 'ferrous',
+                ore: {name: '적철석 + Cr/Ni/Mo 광석', type: '산화광물 + 합금원소'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 36.0, lng: 114.0, pct: 50},
+                    {name: '인도', country: '인도', lat: 22.0, lng: 78.0, pct: 7},
+                    {name: '일본', country: '일본', lat: 35.0, lng: 137.0, pct: 5}
+                ],
+                properties: {
+                    density: '7.7-8.0 g/cm³', meltingPoint: '1,370-1,480°C', tensileStrength: '500-2,000 MPa',
+                    conductivity: '2-6 MS/m', hardness: '150-600 HB', crystalStructure: 'BCC/마르텐사이트'
+                },
+                bars: {strength: 85, corrosionRes: 30, conductivity: 40, lightweight: 14, heatRes: 70},
+                process: ['기본 강철 제조', '합금 원소(Cr,Ni,Mo,V) 첨가', '진공 정련', '연속주조', '열처리(담금질·뜨임)', '압연·단조'],
+                carbon: 3.2,
+                applications: ['기어·베어링', '항공 구조재', '고강도 볼트', '금형'],
+                resources: {reserves: '풍부 (합금원소 의존)', mined: '~50억 톤', price: '$2,000-3,500/톤'}
+            },
+            {
+                id: 'stainless', name: '스테인리스강', nameEn: 'Stainless Steel', symbol: 'STS', category: 'ferrous',
+                ore: {name: '크롬철석(FeCr₂O₄) + 니켈광', type: '산화광물 + 합금'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 30.0, lng: 115.0, pct: 57},
+                    {name: '인도', country: '인도', lat: 22.0, lng: 78.0, pct: 6},
+                    {name: '일본', country: '일본', lat: 35.0, lng: 137.0, pct: 5}
+                ],
+                properties: {
+                    density: '7.7-8.0 g/cm³', meltingPoint: '1,400-1,450°C', tensileStrength: '515-1,380 MPa',
+                    conductivity: '1.4 MS/m', hardness: '150-350 HB', crystalStructure: 'FCC(오스테나이트)'
+                },
+                bars: {strength: 70, corrosionRes: 90, conductivity: 20, lightweight: 16, heatRes: 75},
+                process: ['기본 강철 제조', 'Cr 12%+ / Ni 첨가', 'AOD 정련', '연속주조', '열간압연', '냉간압연·소둔·산세'],
+                carbon: 3.5,
+                applications: ['주방기기', '의료기기', '건축 외장재', '화학 플랜트', '해양 구조물'],
+                resources: {reserves: '풍부', mined: '~15억 톤', price: '$3,000-5,000/톤'}
+            },
+            {
+                id: 'cast-iron', name: '주철', nameEn: 'Cast Iron', symbol: 'FC', category: 'ferrous',
+                ore: {name: '적철석(Fe₂O₃)', type: '산화광물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 36.0, lng: 114.0, pct: 55},
+                    {name: '인도', country: '인도', lat: 22.0, lng: 78.0, pct: 8},
+                    {name: '러시아', country: '러시아', lat: 55.0, lng: 60.0, pct: 5}
+                ],
+                properties: {
+                    density: '6.8-7.8 g/cm³', meltingPoint: '1,150-1,300°C', tensileStrength: '100-900 MPa',
+                    conductivity: '~3 MS/m', hardness: '150-700 HB', crystalStructure: '그래파이트+펄라이트'
+                },
+                bars: {strength: 55, corrosionRes: 20, conductivity: 40, lightweight: 18, heatRes: 65},
+                process: ['철광석 채광', '고로 제련', '큐폴라/전기로 재용해', '접종제 첨가', '주형 주조', '열처리(필요시)'],
+                carbon: 2.7,
+                applications: ['엔진 블록', '맨홀 뚜껑', '배관', '주방 조리도구', '기계 베드'],
+                resources: {reserves: '풍부', mined: '~30억 톤', price: '$1,200-1,800/톤'}
+            },
+            {
+                id: 'tool-steel', name: '공구강', nameEn: 'Tool Steel', symbol: 'SKD', category: 'ferrous',
+                ore: {name: '적철석 + W/Cr/V 광석', type: '산화광물 + 합금원소'},
+                locations: [
+                    {name: '오스트리아(뵈흘러)', country: '오스트리아', lat: 47.0, lng: 15.0, pct: 15},
+                    {name: '스웨덴(우데홀름)', country: '스웨덴', lat: 60.0, lng: 14.0, pct: 12},
+                    {name: '일본(히타치)', country: '일본', lat: 35.0, lng: 137.0, pct: 15}
+                ],
+                properties: {
+                    density: '7.7-8.0 g/cm³', meltingPoint: '1,350-1,450°C', tensileStrength: '700-2,500 MPa',
+                    conductivity: '~2 MS/m', hardness: '55-68 HRC', crystalStructure: '마르텐사이트'
+                },
+                bars: {strength: 95, corrosionRes: 15, conductivity: 30, lightweight: 14, heatRes: 80},
+                process: ['고순도 원료 선별', '전기로 용해', '진공 탈가스(VD)', 'ESR/VAR 재용해', '열간 단조', '열처리(담금질·뜨임·심냉)'],
+                carbon: 4.0,
+                applications: ['절삭공구', '금형', '드릴·탭', '프레스 다이'],
+                resources: {reserves: '풍부 (합금원소 의존)', mined: '~5억 톤', price: '$4,000-8,000/톤'}
+            },
+            {
+                id: 'cu', name: '구리', nameEn: 'Copper', symbol: 'Cu', category: 'heavy',
+                ore: {name: '황동석(CuFeS₂)', type: '황화광물'},
+                locations: [
+                    {name: '칠레 아타카마', country: '칠레', lat: -23.0, lng: -69.0, pct: 27},
+                    {name: '페루', country: '페루', lat: -12.0, lng: -75.0, pct: 11},
+                    {name: '콩고(DR)', country: '콩고', lat: -11.0, lng: 27.0, pct: 8}
+                ],
+                properties: {
+                    density: '8.96 g/cm³', meltingPoint: '1,085°C', tensileStrength: '200-500 MPa',
+                    conductivity: '59.6 MS/m (최고)', hardness: '95 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 45, corrosionRes: 70, conductivity: 100, lightweight: 15, heatRes: 55},
+                process: ['노천/지하 채광', '파쇄·부유선광', '동정광 제련', '전환(Fe/S 제거)', '화학정련', '전기분해 정련(99.99%)'],
+                carbon: 3.5,
+                applications: ['전선·케이블', '배관', 'PCB/전자기기', '열교환기', '황동·청동 합금'],
+                resources: {reserves: '10억 톤', mined: '~7억 톤', price: '$9,500-11,000/톤'}
+            },
+            {
+                id: 'zn', name: '아연', nameEn: 'Zinc', symbol: 'Zn', category: 'heavy',
+                ore: {name: '섬아연석(ZnS)', type: '황화광물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 28.0, lng: 105.0, pct: 25},
+                    {name: '페루', country: '페루', lat: -12.0, lng: -76.0, pct: 8},
+                    {name: '호주', country: '호주', lat: -20.0, lng: 140.0, pct: 7}
+                ],
+                properties: {
+                    density: '7.14 g/cm³', meltingPoint: '419°C', tensileStrength: '200-300 MPa',
+                    conductivity: '17 MS/m', hardness: '40 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 30, corrosionRes: 60, conductivity: 28, lightweight: 22, heatRes: 20},
+                process: ['채광·파쇄', '부유선광(50-60% Zn)', '배소(ZnS→ZnO)', 'H₂SO₄ 침출', '전해채취', '용해·주조'],
+                carbon: 3.1,
+                applications: ['아연도금(갈바)', '황동 합금', '다이캐스팅', '배터리', '화장품'],
+                resources: {reserves: '3.1억 톤', mined: '~4억 톤', price: '$3,000-3,500/톤'}
+            },
+            {
+                id: 'pb', name: '납', nameEn: 'Lead', symbol: 'Pb', category: 'heavy',
+                ore: {name: '방연석(PbS)', type: '황화광물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 35.0, lng: 110.0, pct: 40},
+                    {name: '호주', country: '호주', lat: -32.0, lng: 142.0, pct: 10},
+                    {name: '페루', country: '페루', lat: -13.0, lng: -76.0, pct: 7}
+                ],
+                properties: {
+                    density: '11.34 g/cm³', meltingPoint: '327°C', tensileStrength: '150-200 MPa',
+                    conductivity: '4.8 MS/m', hardness: '38 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 15, corrosionRes: 65, conductivity: 15, lightweight: 5, heatRes: 15},
+                process: ['채광·파쇄', '부유선광', '배소(PbS→PbO)', '용광로 제련', '정련(불순물 제거)', '전해 정제'],
+                carbon: 2.5,
+                applications: ['납축전지', '방사선 차폐', '땜납', '어망 추'],
+                resources: {reserves: '9,000만 톤', mined: '~6억 톤', price: '$2,200-2,600/톤'}
+            },
+            {
+                id: 'sn', name: '주석', nameEn: 'Tin', symbol: 'Sn', category: 'heavy',
+                ore: {name: '석석(SnO₂)', type: '산화광물'},
+                locations: [
+                    {name: '인도네시아 방카섬', country: '인도네시아', lat: -2.0, lng: 106.0, pct: 30},
+                    {name: '중국', country: '중국', lat: 24.0, lng: 103.0, pct: 25},
+                    {name: '미얀마', country: '미얀마', lat: 20.0, lng: 97.0, pct: 12}
+                ],
+                properties: {
+                    density: '7.31 g/cm³', meltingPoint: '232°C', tensileStrength: '170-230 MPa',
+                    conductivity: '8.7 MS/m', hardness: '51 HV', crystalStructure: '정방정계'
+                },
+                bars: {strength: 20, corrosionRes: 70, conductivity: 22, lightweight: 22, heatRes: 10},
+                process: ['충적/경암 채광', '파쇄·비중선별', '배소(불순물 제거)', '환원 제련', '정련·정제', '주조'],
+                carbon: 2.0,
+                applications: ['땜납(전자)', '통조림 코팅', '청동 합금', '베어링'],
+                resources: {reserves: '470만 톤', mined: '~1억 톤', price: '$36,000-42,000/톤'}
+            },
+            {
+                id: 'ni', name: '니켈', nameEn: 'Nickel', symbol: 'Ni', category: 'heavy',
+                ore: {name: '라테라이트/펜틀랜다이트', type: '규산염/황화광물'},
+                locations: [
+                    {name: '인도네시아 술라웨시', country: '인도네시아', lat: -2.0, lng: 121.0, pct: 35},
+                    {name: '필리핀', country: '필리핀', lat: 10.0, lng: 124.0, pct: 9},
+                    {name: '러시아 노릴스크', country: '러시아', lat: 69.0, lng: 88.0, pct: 7}
+                ],
+                properties: {
+                    density: '8.91 g/cm³', meltingPoint: '1,455°C', tensileStrength: '300-600 MPa',
+                    conductivity: '14.3 MS/m', hardness: '110 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 65, corrosionRes: 80, conductivity: 25, lightweight: 14, heatRes: 80},
+                process: ['채광(노천/지하)', '파쇄·선광', 'HPAL 고압산침출', 'MHP 생성', '제련·정련', '전해 정제'],
+                carbon: 10.0,
+                applications: ['스테인리스강(65%)', '초합금', '도금', '배터리(EV)', '촉매'],
+                resources: {reserves: '1억 톤', mined: '~1.3억 톤', price: '$18,000-22,000/톤'}
+            },
+            {
+                id: 'co', name: '코발트', nameEn: 'Cobalt', symbol: 'Co', category: 'heavy',
+                ore: {name: '헤테로게나이트(CoO·OH)', type: '산화광물'},
+                locations: [
+                    {name: '콩고(DR) 카탕가', country: '콩고', lat: -11.0, lng: 27.0, pct: 76},
+                    {name: '인도네시아', country: '인도네시아', lat: -1.0, lng: 121.0, pct: 10},
+                    {name: '러시아', country: '러시아', lat: 69.0, lng: 88.0, pct: 3}
+                ],
+                properties: {
+                    density: '8.90 g/cm³', meltingPoint: '1,495°C', tensileStrength: '350-500 MPa',
+                    conductivity: '16.8 MS/m', hardness: '120 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 60, corrosionRes: 60, conductivity: 28, lightweight: 14, heatRes: 85},
+                process: ['채광(주로 콩고)', '파쇄·정광', '배소/H₂SO₄ 침출', '용매 추출', '전해채취', '정련·용해'],
+                carbon: 8.3,
+                applications: ['리튬이온 배터리(40%+)', '초합금', '영구자석', '촉매', '도금'],
+                resources: {reserves: '760만 톤', mined: '~500만 톤', price: '$33,000-37,000/톤'}
+            },
+            {
+                id: 'al', name: '알루미늄', nameEn: 'Aluminum', symbol: 'Al', category: 'light',
+                ore: {name: '보크사이트(Al₂O₃·xH₂O)', type: '수산화광물'},
+                locations: [
+                    {name: '기니', country: '기니', lat: 10.0, lng: -10.0, pct: 28},
+                    {name: '호주 웨이파', country: '호주', lat: -12.0, lng: 142.0, pct: 21},
+                    {name: '베트남', country: '베트남', lat: 12.0, lng: 108.0, pct: 14}
+                ],
+                properties: {
+                    density: '2.70 g/cm³', meltingPoint: '660°C', tensileStrength: '70-700 MPa',
+                    conductivity: '38 MS/m', hardness: '25 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 55, corrosionRes: 80, conductivity: 62, lightweight: 95, heatRes: 30},
+                process: ['보크사이트 채광', '바이어법(NaOH 침출)', 'Al(OH)₃ 침전', '하소→알루미나(Al₂O₃)', '홀-에루법 전기분해', '주조·압연'],
+                carbon: 8.0,
+                applications: ['항공기', '자동차', '건축 파사드', '음료캔', '전선'],
+                resources: {reserves: '300억 톤(보크사이트)', mined: '~25억 톤', price: '$2,500-3,200/톤'}
+            },
+            {
+                id: 'mg', name: '마그네슘', nameEn: 'Magnesium', symbol: 'Mg', category: 'light',
+                ore: {name: '돌로마이트/마그네사이트', type: '탄산염광물/해수'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 36.0, lng: 108.0, pct: 85},
+                    {name: '이스라엘(사해)', country: '이스라엘', lat: 31.5, lng: 35.5, pct: 3},
+                    {name: '러시아', country: '러시아', lat: 55.0, lng: 60.0, pct: 3}
+                ],
+                properties: {
+                    density: '1.74 g/cm³', meltingPoint: '650°C', tensileStrength: '65-340 MPa',
+                    conductivity: '22.6 MS/m', hardness: '67 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 40, corrosionRes: 20, conductivity: 38, lightweight: 100, heatRes: 25},
+                process: ['돌로마이트 채굴/해수 추출', '하소(MgO 생성)', '피전법(실리콘환원)', '또는 전해법', '정련·주조'],
+                carbon: 14.0,
+                applications: ['자동차 부품', '노트북·휴대폰 케이스', '항공우주', '불꽃놀이'],
+                resources: {reserves: '24억 톤', mined: '~2.5억 톤', price: '$4,500-6,500/톤'}
+            },
+            {
+                id: 'ti', name: '티타늄', nameEn: 'Titanium', symbol: 'Ti', category: 'light',
+                ore: {name: '일메나이트(FeTiO₃)/루타일(TiO₂)', type: '산화광물'},
+                locations: [
+                    {name: '호주', country: '호주', lat: -25.0, lng: 134.0, pct: 26},
+                    {name: '중국', country: '중국', lat: 26.0, lng: 102.0, pct: 34},
+                    {name: '모잠비크', country: '모잠비크', lat: -23.0, lng: 35.0, pct: 8}
+                ],
+                properties: {
+                    density: '4.51 g/cm³', meltingPoint: '1,668°C', tensileStrength: '240-1,400 MPa',
+                    conductivity: '2.4 MS/m', hardness: '100 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 90, corrosionRes: 95, conductivity: 8, lightweight: 80, heatRes: 88},
+                process: ['일메나이트/루타일 채광', '염소화(TiCl₄ 생성)', '크롤법(Mg환원)', '진공아크 재용해', '단조·압연'],
+                carbon: 36.0,
+                applications: ['항공기 프레임', '의료 임플란트', '고급 스포츠용품', '해양 구조물'],
+                resources: {reserves: '2.7억 톤', mined: '~1억 톤', price: '$14,000-18,000/톤(스펀지)'}
+            },
+            {
+                id: 'be', name: '베릴륨', nameEn: 'Beryllium', symbol: 'Be', category: 'light',
+                ore: {name: '베르트란다이트/녹주석(에메랄드)', type: '규산염광물'},
+                locations: [
+                    {name: '미국 유타', country: '미국', lat: 39.0, lng: -113.0, pct: 65},
+                    {name: '중국', country: '중국', lat: 30.0, lng: 110.0, pct: 25},
+                    {name: '모잠비크', country: '모잠비크', lat: -15.0, lng: 38.0, pct: 5}
+                ],
+                properties: {
+                    density: '1.85 g/cm³', meltingPoint: '1,287°C', tensileStrength: '300-400 MPa',
+                    conductivity: '31 MS/m', hardness: '200 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 70, corrosionRes: 50, conductivity: 50, lightweight: 98, heatRes: 70},
+                process: ['베르트란다이트/녹주석 채광', 'H₂SO₄ 산침출', '용매추출·침전', '불화물 염 전해환원', '용해·주조'],
+                carbon: 15.0,
+                applications: ['항공우주', '원자력', 'X선 창', '우주 반사경', '방위산업'],
+                resources: {reserves: '1.3만 톤', mined: '~3,000+ 톤', price: '$600-900/kg'}
+            },
+            {
+                id: 'au', name: '금', nameEn: 'Gold', symbol: 'Au', category: 'precious',
+                ore: {name: '자연금/함금 황철석', type: '자연광물/황화광물'},
+                locations: [
+                    {name: '중국(산둥)', country: '중국', lat: 36.0, lng: 117.0, pct: 10},
+                    {name: '호주', country: '호주', lat: -31.0, lng: 121.0, pct: 9},
+                    {name: '러시아', country: '러시아', lat: 62.0, lng: 135.0, pct: 9}
+                ],
+                properties: {
+                    density: '19.3 g/cm³', meltingPoint: '1,064°C', tensileStrength: '120-200 MPa',
+                    conductivity: '45 MS/m', hardness: '25 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 20, corrosionRes: 100, conductivity: 72, lightweight: 2, heatRes: 60},
+                process: ['노천/지하 채광', '파쇄·분쇄', '시안화 침출', '활성탄 흡착', '전해 정련', '주조(도레바)'],
+                carbon: 20000,
+                applications: ['전자기기 접점', '보석·화폐', '반도체 본딩와이어', '치과'],
+                resources: {reserves: '6만 톤', mined: '~22만 톤(역사 누적)', price: '$65,000-95,000/kg'}
+            },
+            {
+                id: 'ag', name: '은', nameEn: 'Silver', symbol: 'Ag', category: 'precious',
+                ore: {name: '방연석(부산물)/아르겐타이트', type: '황화광물(Cu/Pb 부산물)'},
+                locations: [
+                    {name: '멕시코', country: '멕시코', lat: 23.0, lng: -103.0, pct: 25},
+                    {name: '중국', country: '중국', lat: 34.0, lng: 109.0, pct: 12},
+                    {name: '페루', country: '페루', lat: -14.0, lng: -75.0, pct: 8}
+                ],
+                properties: {
+                    density: '10.5 g/cm³', meltingPoint: '961°C', tensileStrength: '50-200 MPa',
+                    conductivity: '63 MS/m (금속 중 최고)', hardness: '60 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 25, corrosionRes: 50, conductivity: 100, lightweight: 8, heatRes: 50},
+                process: ['Cu/Pb 제련 시 부산물 회수', '부유선광', '회취법(납과 분리)', '전해 정련', '주조'],
+                carbon: 104,
+                applications: ['전자부품', '태양광 패널', '사진·은경', '보석', '항균 코팅'],
+                resources: {reserves: '71만 톤', mined: '~175만 톤', price: '$900-1,100/kg'}
+            },
+            {
+                id: 'pt', name: '백금', nameEn: 'Platinum', symbol: 'Pt', category: 'precious',
+                ore: {name: 'PGM 황화광물', type: '황화광물'},
+                locations: [
+                    {name: '남아공 부시벨드', country: '남아공', lat: -24.0, lng: 28.0, pct: 72},
+                    {name: '러시아 노릴스크', country: '러시아', lat: 69.0, lng: 88.0, pct: 13},
+                    {name: '짐바브웨', country: '짐바브웨', lat: -19.0, lng: 29.0, pct: 6}
+                ],
+                properties: {
+                    density: '21.45 g/cm³', meltingPoint: '1,768°C', tensileStrength: '130-200 MPa',
+                    conductivity: '9.6 MS/m', hardness: '64 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 30, corrosionRes: 95, conductivity: 16, lightweight: 1, heatRes: 90},
+                process: ['PGM 광산 채광', '파쇄·부유선광', '매트 제련', '배소·산침출', '왕수 용해', '선택적 환원·정련'],
+                carbon: 12500,
+                applications: ['자동차 촉매(40%)', '보석', '전극', '의료기기'],
+                resources: {reserves: '7만 톤', mined: '~1만 톤', price: '$32,000-35,000/kg'}
+            },
+            {
+                id: 'pd', name: '팔라듐', nameEn: 'Palladium', symbol: 'Pd', category: 'precious',
+                ore: {name: 'PGM 광물(Pt과 공존)', type: '황화광물'},
+                locations: [
+                    {name: '러시아 노릴스크', country: '러시아', lat: 69.0, lng: 88.0, pct: 40},
+                    {name: '남아공 부시벨드', country: '남아공', lat: -24.0, lng: 28.0, pct: 38},
+                    {name: '캐나다 서드버리', country: '캐나다', lat: 46.0, lng: -81.0, pct: 9}
+                ],
+                properties: {
+                    density: '12.02 g/cm³', meltingPoint: '1,555°C', tensileStrength: '125-200 MPa',
+                    conductivity: '9.5 MS/m', hardness: '50 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 25, corrosionRes: 85, conductivity: 16, lightweight: 5, heatRes: 80},
+                process: ['PGM 광산(Pt과 공동 추출)', '용매추출', '왕수 용해', '선택적 환원', '정련·주조'],
+                carbon: 9500,
+                applications: ['자동차 촉매(85%)', '수소 정제', '전자부품', '치과 합금'],
+                resources: {reserves: '6만 톤', mined: '~8,000 톤', price: '$30,000-35,000/kg'}
+            },
+            {
+                id: 'rh', name: '로듐', nameEn: 'Rhodium', symbol: 'Rh', category: 'precious',
+                ore: {name: 'PGM 광물(Pt 부산물)', type: '황화광물'},
+                locations: [
+                    {name: '남아공', country: '남아공', lat: -24.0, lng: 28.0, pct: 80},
+                    {name: '러시아', country: '러시아', lat: 69.0, lng: 88.0, pct: 10},
+                    {name: '짐바브웨', country: '짐바브웨', lat: -19.0, lng: 29.0, pct: 5}
+                ],
+                properties: {
+                    density: '12.41 g/cm³', meltingPoint: '1,964°C', tensileStrength: '100-150 MPa',
+                    conductivity: '21 MS/m', hardness: '117 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 35, corrosionRes: 98, conductivity: 35, lightweight: 5, heatRes: 95},
+                process: ['PGM 정련 중 회수', '염소화·선택적 용해', '왕수 침출', '수소환원', '정제·용해'],
+                carbon: 35000,
+                applications: ['자동차 촉매(80%+)', '보석(화이트골드)', '전자접점', '실험실 도가니'],
+                resources: {reserves: 'PGM 매장량 내 포함', mined: '~400+ 톤', price: '$145,000-175,000/kg'}
+            },
+            {
+                id: 'li', name: '리튬', nameEn: 'Lithium', symbol: 'Li', category: 'rare',
+                ore: {name: '스포듀민/염수(브라인)', type: '규산염광물/염수'},
+                locations: [
+                    {name: '호주 그린부시스', country: '호주', lat: -34.0, lng: 116.0, pct: 50},
+                    {name: '칠레 아타카마', country: '칠레', lat: -23.0, lng: -68.0, pct: 20},
+                    {name: '중국', country: '중국', lat: 32.0, lng: 100.0, pct: 15}
+                ],
+                properties: {
+                    density: '0.534 g/cm³', meltingPoint: '180°C', tensileStrength: '40-80 MPa',
+                    conductivity: '11 MS/m', hardness: '0.6 모스', crystalStructure: 'BCC'
+                },
+                bars: {strength: 5, corrosionRes: 5, conductivity: 18, lightweight: 100, heatRes: 5},
+                process: ['염수 추출/경암 채광', '증발 농축(염수) 또는 배소(경암)', 'H₂SO₄ 침출', '탄산리튬 침전', '결정화', '수산화리튬 전환'],
+                carbon: 5.0,
+                applications: ['리튬이온 배터리(80%+)', '세라믹', '윤활제', '의약품', '원자력'],
+                resources: {reserves: '2,300만 톤', mined: '~800만 톤', price: '$10,000-15,000/톤'}
+            },
+            {
+                id: 'ga', name: '갈륨', nameEn: 'Gallium', symbol: 'Ga', category: 'rare',
+                ore: {name: '보크사이트(부산물)', type: '알루미늄 제련 부산물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 36.0, lng: 108.0, pct: 95},
+                    {name: '러시아', country: '러시아', lat: 55.0, lng: 60.0, pct: 3},
+                    {name: '우크라이나', country: '우크라이나', lat: 49.0, lng: 32.0, pct: 1}
+                ],
+                properties: {
+                    density: '5.91 g/cm³', meltingPoint: '30°C(손에서 녹음)', tensileStrength: '~5 MPa',
+                    conductivity: '3.8 MS/m', hardness: '2 모스', crystalStructure: '사방정계'
+                },
+                bars: {strength: 5, corrosionRes: 40, conductivity: 8, lightweight: 40, heatRes: 5},
+                process: ['바이어법 중 회수', '알칼리 용액 농축', '산성화·침전', '전해채취', '존 정련(반도체 등급)'],
+                carbon: 6.0,
+                applications: ['반도체(95%+, GaN)', '태양전지', '광전소자', 'LED'],
+                resources: {reserves: '미량(부산물)', mined: '~1,500 톤', price: '$300-500/kg'}
+            },
+            {
+                id: 'in', name: '인듐', nameEn: 'Indium', symbol: 'In', category: 'rare',
+                ore: {name: '아연/구리 제련 부산물', type: '황화광물 부산물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 25.0, lng: 103.0, pct: 30},
+                    {name: '한국', country: '한국', lat: 37.0, lng: 127.0, pct: 20},
+                    {name: '일본', country: '일본', lat: 35.0, lng: 137.0, pct: 15}
+                ],
+                properties: {
+                    density: '7.31 g/cm³', meltingPoint: '157°C', tensileStrength: '10-30 MPa',
+                    conductivity: '10.7 MS/m', hardness: '1 모스', crystalStructure: '정방정계'
+                },
+                bars: {strength: 5, corrosionRes: 40, conductivity: 18, lightweight: 22, heatRes: 5},
+                process: ['Zn/Cu 제련 시 회수', 'H₂SO₄ 용해', '선택적 전해채취', '정제·존 정련', '주조'],
+                carbon: 5.0,
+                applications: ['평판 디스플레이(ITO, 80%)', '터치스크린', '태양전지', '반도체'],
+                resources: {reserves: '미량', mined: '~3,500 톤', price: '$300-400/kg'}
+            },
+            {
+                id: 'ge', name: '게르마늄', nameEn: 'Germanium', symbol: 'Ge', category: 'rare',
+                ore: {name: '아연광/석탄재 부산물', type: '황화광물/석탄재'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 25.0, lng: 103.0, pct: 70},
+                    {name: '러시아', country: '러시아', lat: 55.0, lng: 60.0, pct: 10},
+                    {name: '미국', country: '미국', lat: 40.0, lng: -105.0, pct: 5}
+                ],
+                properties: {
+                    density: '5.32 g/cm³', meltingPoint: '938°C', tensileStrength: '~10 MPa',
+                    conductivity: '2 MS/m(반도체)', hardness: '6 모스', crystalStructure: '다이아몬드 입방'
+                },
+                bars: {strength: 5, corrosionRes: 50, conductivity: 5, lightweight: 42, heatRes: 40},
+                process: ['석탄재/아연광 회수', 'H₂SO₄ 침출', '용매추출·침전', '존 정련(다중 패스)', '주조'],
+                carbon: 8.0,
+                applications: ['광섬유(35%)', '반도체/IC', '적외선 광학', '야간 투시경'],
+                resources: {reserves: '미량', mined: '~1,200 톤', price: '$1,500-2,000/kg'}
+            },
+            {
+                id: 'w', name: '텅스텐', nameEn: 'Tungsten', symbol: 'W', category: 'rare',
+                ore: {name: '회중석(CaWO₄)/철망간중석', type: '텅스텐산염'},
+                locations: [
+                    {name: '중국(후난·장시)', country: '중국', lat: 27.0, lng: 113.0, pct: 80},
+                    {name: '베트남', country: '베트남', lat: 21.0, lng: 105.0, pct: 5},
+                    {name: '러시아', country: '러시아', lat: 62.0, lng: 135.0, pct: 4}
+                ],
+                properties: {
+                    density: '19.35 g/cm³', meltingPoint: '3,422°C(금속 최고)', tensileStrength: '500-2,500 MPa',
+                    conductivity: '18.5 MS/m', hardness: '390 HV', crystalStructure: 'BCC'
+                },
+                bars: {strength: 88, corrosionRes: 60, conductivity: 31, lightweight: 1, heatRes: 100},
+                process: ['회중석/철망간중석 채광', '파쇄·비중선별', 'NaOH/HCl 침출', '텅스텐산 침전', '탄소환원(분말)', '소결·아크용해'],
+                carbon: 12.0,
+                applications: ['초경합금 공구팁', '필라멘트', '방사선 차폐', '반도체 스퍼터링'],
+                resources: {reserves: '240만 톤', mined: '~50만 톤', price: '$250-350/kg'}
+            },
+            {
+                id: 'mo', name: '몰리브덴', nameEn: 'Molybdenum', symbol: 'Mo', category: 'rare',
+                ore: {name: '휘수연석(MoS₂)', type: '황화광물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 34.0, lng: 110.0, pct: 46},
+                    {name: '칠레', country: '칠레', lat: -33.0, lng: -70.0, pct: 16},
+                    {name: '미국', country: '미국', lat: 40.0, lng: -106.0, pct: 15}
+                ],
+                properties: {
+                    density: '10.28 g/cm³', meltingPoint: '2,623°C', tensileStrength: '500-700 MPa',
+                    conductivity: '18.7 MS/m', hardness: '275 HV', crystalStructure: 'BCC'
+                },
+                bars: {strength: 75, corrosionRes: 60, conductivity: 30, lightweight: 8, heatRes: 95},
+                process: ['반암동/몰리브덴 채광', '부유선광(황화물 농축)', '배소(MoO₃ 생성)', 'NH₃ 침출', 'H₂ 환원(Mo 분말)', '소결·용해'],
+                carbon: 4.0,
+                applications: ['강합금(40%)', '촉매(30%)', '윤활제', '전극', '필라멘트'],
+                resources: {reserves: '1,700만 톤', mined: '~500만 톤', price: '$50-70/kg'}
+            },
+            {
+                id: 'ta', name: '탄탈륨', nameEn: 'Tantalum', symbol: 'Ta', category: 'rare',
+                ore: {name: '탄탈라이트(콜탄)', type: '산화광물'},
+                locations: [
+                    {name: '콩고(DR)', country: '콩고', lat: -1.0, lng: 28.0, pct: 40},
+                    {name: '호주', country: '호주', lat: -24.0, lng: 134.0, pct: 15},
+                    {name: '브라질', country: '브라질', lat: -10.0, lng: -48.0, pct: 12}
+                ],
+                properties: {
+                    density: '16.69 g/cm³', meltingPoint: '3,017°C', tensileStrength: '200-400 MPa',
+                    conductivity: '7.6 MS/m', hardness: '260 HV', crystalStructure: 'BCC'
+                },
+                bars: {strength: 55, corrosionRes: 90, conductivity: 13, lightweight: 3, heatRes: 97},
+                process: ['탄탈라이트 채광', '파쇄·비중선별', 'HF 산침출', '용매추출·정제', '탄화염소화→환원', '소결·용해'],
+                carbon: 8.0,
+                applications: ['커패시터(35%)', '초합금', '외과 임플란트', '첨단 전자부품'],
+                resources: {reserves: '충분(DRC 집중)', mined: '~2만 톤', price: '$150-250/kg'}
+            },
+            {
+                id: 'mn', name: '망간', nameEn: 'Manganese', symbol: 'Mn', category: 'rare',
+                ore: {name: '연망간석(MnO₂)', type: '산화광물'},
+                locations: [
+                    {name: '가봉', country: '가봉', lat: 0.0, lng: 11.0, pct: 35},
+                    {name: '남아공', country: '남아공', lat: -26.0, lng: 28.0, pct: 20},
+                    {name: '호주', country: '호주', lat: -22.0, lng: 134.0, pct: 10}
+                ],
+                properties: {
+                    density: '7.47 g/cm³', meltingPoint: '1,246°C', tensileStrength: '200-300 MPa',
+                    conductivity: '0.7 MS/m', hardness: '230 HV', crystalStructure: '입방정계'
+                },
+                bars: {strength: 50, corrosionRes: 30, conductivity: 3, lightweight: 20, heatRes: 60},
+                process: ['망간광 채광', '파쇄·세척', '코크스 환원(페로망간)', 'H₂SO₄ 침출', '전해채취(순망간)', '주조'],
+                carbon: 5.5,
+                applications: ['강합금(90%)', '배터리', '세라믹', '유리 착색'],
+                resources: {reserves: '수십억 톤', mined: '~5억 톤', price: '$1,500-2,000/톤'}
+            },
+            {
+                id: 'nb', name: '니오븀', nameEn: 'Niobium', symbol: 'Nb', category: 'rare',
+                ore: {name: '파이로클로어(Pyrochlore)', type: '산화광물'},
+                locations: [
+                    {name: '브라질', country: '브라질', lat: -16.0, lng: -47.0, pct: 80},
+                    {name: '캐나다', country: '캐나다', lat: 48.0, lng: -79.0, pct: 10},
+                    {name: '호주', country: '호주', lat: -25.0, lng: 134.0, pct: 3}
+                ],
+                properties: {
+                    density: '8.57 g/cm³', meltingPoint: '2,468°C', tensileStrength: '200-250 MPa',
+                    conductivity: '6.7 MS/m', hardness: '200 HV', crystalStructure: 'BCC'
+                },
+                bars: {strength: 55, corrosionRes: 70, conductivity: 11, lightweight: 14, heatRes: 92},
+                process: ['파이로클로어 채광', '파쇄·선광', '소다 배소', '산침출', '용매추출→Nb₂O₅', '알루미노테르밋 환원'],
+                carbon: 6.0,
+                applications: ['고강도강 합금', '초합금', '용접봉', '초전도체', '파이프라인'],
+                resources: {reserves: '1,000만 톤', mined: '~20만 톤', price: '$40-60/kg'}
+            },
+            {
+                id: 'v', name: '바나듐', nameEn: 'Vanadium', symbol: 'V', category: 'rare',
+                ore: {name: '바나디나이트/자철석(V함유)', type: '산화광물/자철석'},
+                locations: [
+                    {name: '남아공', country: '남아공', lat: -25.0, lng: 27.0, pct: 35},
+                    {name: '중국', country: '중국', lat: 32.0, lng: 104.0, pct: 35},
+                    {name: '러시아', country: '러시아', lat: 55.0, lng: 60.0, pct: 15}
+                ],
+                properties: {
+                    density: '6.11 g/cm³', meltingPoint: '1,910°C', tensileStrength: '400-900 MPa',
+                    conductivity: '3.2 MS/m', hardness: '380 HV', crystalStructure: 'BCC'
+                },
+                bars: {strength: 70, corrosionRes: 50, conductivity: 5, lightweight: 30, heatRes: 85},
+                process: ['바나듐 광석/석탄재 회수', '소금소다 배소(산화바나듐)', 'H₂SO₄ 침출', '용매추출·침전', 'V₂O₅→페로바나듐 환원'],
+                carbon: 7.0,
+                applications: ['강합금(90%+)', '바나듐 레독스 배터리', '촉매'],
+                resources: {reserves: '6,300만 톤', mined: '~5만 톤', price: '$15-25/kg'}
+            },
+            {
+                id: 'nd', name: '네오디뮴', nameEn: 'Neodymium', symbol: 'Nd', category: 'ree',
+                ore: {name: '바스트네사이트/모나자이트', type: '탄산염/인산염광물'},
+                locations: [
+                    {name: '중국 바이윤오보', country: '중국', lat: 42.0, lng: 110.0, pct: 83},
+                    {name: '미국 마운틴패스', country: '미국', lat: 35.0, lng: -115.0, pct: 5},
+                    {name: '미얀마', country: '미얀마', lat: 22.0, lng: 97.0, pct: 5}
+                ],
+                properties: {
+                    density: '7.01 g/cm³', meltingPoint: '1,024°C', tensileStrength: '~280 MPa',
+                    conductivity: '1.6 MS/m', hardness: '135 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 40, corrosionRes: 20, conductivity: 5, lightweight: 22, heatRes: 50},
+                process: ['REE 광석 채광', 'H₂SO₄/HCl 침출', '용매추출(개별 REE 분리)', '옥살산 침전', '하소→Nd₂O₃', '용융염 전해(Nd 금속)'],
+                carbon: 15.0,
+                applications: ['NdFeB 영구자석(80%+)', '레이저', '광섬유 증폭기', '촉매'],
+                resources: {reserves: '1,200만 톤(REO)', mined: '~200만 톤', price: '$80-120/kg(산화물)'}
+            },
+            {
+                id: 'dy', name: '디스프로슘', nameEn: 'Dysprosium', symbol: 'Dy', category: 'ree',
+                ore: {name: '바스트네사이트/이온흡착광', type: '탄산염/이온흡착'},
+                locations: [
+                    {name: '중국(남부 이온흡착)', country: '중국', lat: 25.0, lng: 115.0, pct: 95},
+                    {name: '미얀마', country: '미얀마', lat: 22.0, lng: 97.0, pct: 3},
+                    {name: '호주', country: '호주', lat: -30.0, lng: 134.0, pct: 1}
+                ],
+                properties: {
+                    density: '8.55 g/cm³', meltingPoint: '1,412°C', tensileStrength: '~300 MPa',
+                    conductivity: '1.1 MS/m', hardness: '150 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 45, corrosionRes: 20, conductivity: 3, lightweight: 15, heatRes: 60},
+                process: ['이온흡착광 채광', '(NH₄)₂SO₄ 침출', '용매추출(분리)', '옥살산 침전', '하소', '금속환원'],
+                carbon: 18.0,
+                applications: ['고온 영구자석(Dy첨가)', '원자로 제어봉', '방사선 흡수체'],
+                resources: {reserves: 'REE 매장량 내', mined: '~1.5만 톤', price: '$300-500/kg'}
+            },
+            {
+                id: 'ce', name: '세륨', nameEn: 'Cerium', symbol: 'Ce', category: 'ree',
+                ore: {name: '바스트네사이트/모나자이트', type: '탄산염/인산염'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 42.0, lng: 110.0, pct: 83},
+                    {name: '미국', country: '미국', lat: 35.0, lng: -115.0, pct: 5},
+                    {name: '호주', country: '호주', lat: -30.0, lng: 134.0, pct: 4}
+                ],
+                properties: {
+                    density: '6.77 g/cm³', meltingPoint: '798°C', tensileStrength: '~200 MPa',
+                    conductivity: '1.4 MS/m', hardness: '90 HV', crystalStructure: 'FCC'
+                },
+                bars: {strength: 30, corrosionRes: 15, conductivity: 4, lightweight: 24, heatRes: 35},
+                process: ['REE 광석 채광', '산침출', '용매추출(분리)', '옥살산 침전', '하소→CeO₂'],
+                carbon: 10.0,
+                applications: ['자동차 촉매', '유리 연마제', '연료전지', '자외선 차단'],
+                resources: {reserves: 'REE 내 최다(~50%)', mined: '~50만 톤', price: '$5-8/kg(산화물)'}
+            },
+            {
+                id: 'la', name: '란타넘', nameEn: 'Lanthanum', symbol: 'La', category: 'ree',
+                ore: {name: '바스트네사이트(La 35%)', type: '탄산염광물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 42.0, lng: 110.0, pct: 83},
+                    {name: '미국', country: '미국', lat: 35.0, lng: -115.0, pct: 5},
+                    {name: '호주', country: '호주', lat: -30.0, lng: 134.0, pct: 4}
+                ],
+                properties: {
+                    density: '6.15 g/cm³', meltingPoint: '920°C', tensileStrength: '~180 MPa',
+                    conductivity: '1.5 MS/m', hardness: '110 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 25, corrosionRes: 15, conductivity: 4, lightweight: 30, heatRes: 40},
+                process: ['REE 광석 채광', '산침출', '용매추출', '옥살산 침전', '하소→La₂O₃'],
+                carbon: 10.0,
+                applications: ['촉매(자동차 배기)', 'NiMH 배터리', '연마 화합물', '광학 유리'],
+                resources: {reserves: 'REE 매장량 내', mined: '~30만 톤', price: '$5-8/kg(산화물)'}
+            },
+            {
+                id: 'pr', name: '프라세오디뮴', nameEn: 'Praseodymium', symbol: 'Pr', category: 'ree',
+                ore: {name: '바스트네사이트/모나자이트', type: '탄산염/인산염'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 42.0, lng: 110.0, pct: 83},
+                    {name: '미국', country: '미국', lat: 35.0, lng: -115.0, pct: 5},
+                    {name: '호주', country: '호주', lat: -30.0, lng: 134.0, pct: 4}
+                ],
+                properties: {
+                    density: '6.64 g/cm³', meltingPoint: '931°C', tensileStrength: '~250 MPa',
+                    conductivity: '1.4 MS/m', hardness: '130 HV', crystalStructure: 'HCP'
+                },
+                bars: {strength: 35, corrosionRes: 15, conductivity: 4, lightweight: 25, heatRes: 40},
+                process: ['REE 광석 채광', '산침출', '용매추출(분리)', '옥살산 침전', '하소→Pr₆O₁₁'],
+                carbon: 12.0,
+                applications: ['영구자석(Pr-Fe-B)', '촉매', '광학소재', '착색제(세라믹 녹색)'],
+                resources: {reserves: 'REE 매장량 내', mined: '~2만 톤', price: '$80-100/kg(산화물)'}
+            },
+            {
+                id: 'si', name: '규소', nameEn: 'Silicon', symbol: 'Si', category: 'metalloid',
+                ore: {name: '석영(SiO₂)/규사', type: '산화광물'},
+                locations: [
+                    {name: '중국', country: '중국', lat: 28.0, lng: 106.0, pct: 70},
+                    {name: '러시아', country: '러시아', lat: 56.0, lng: 44.0, pct: 5},
+                    {name: '노르웨이', country: '노르웨이', lat: 60.0, lng: 8.0, pct: 5}
+                ],
+                properties: {
+                    density: '2.33 g/cm³', meltingPoint: '1,414°C', tensileStrength: '~100 MPa(취성)',
+                    conductivity: '10⁻³ MS/m(진성반도체)', hardness: '1,150 HV', crystalStructure: '다이아몬드 입방'
+                },
+                bars: {strength: 40, corrosionRes: 80, conductivity: 1, lightweight: 90, heatRes: 65},
+                process: ['석영/규사 채광', '세척·분급', '전기로 환원(1,800°C+)', '야금급 Si 생산', 'SiHCl₃ 전환(반도체급)', '초크랄스키법 단결정 성장'],
+                carbon: 5.0,
+                applications: ['반도체/IC(99.9999999%)', '태양전지(25%)', '알루미늄 합금(60%)', '실리콘'],
+                resources: {reserves: '사실상 무한(석영 편재)', mined: '~100억 톤', price: '$3-5/kg(야금급) | $100-200/kg(반도체급)'}
+            }
+        ];
+
+        // CATEGORY TRANSLATIONS
+        const CATEGORY_NAMES = {
+            ferrous: '철금속',
+            heavy: '비철 - 중금속',
+            light: '비철 - 경금속',
+            precious: '비철 - 귀금속',
+            rare: '희유금속/전략금속',
+            ree: '희토류 (REE)',
+            metalloid: '준금속'
+        };
+
+        // GLOBE SETUP
+        let scene, camera, renderer, globeGroup, particles, raycaster, mouse, selectedMetal = null;
+        let controls, chart;
+
+        function initGlobe() {
+            const canvas = document.getElementById('canvas');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a0f);
+
+            camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
+            camera.position.z = 2.5;
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            globeGroup = new THREE.Group();
+            scene.add(globeGroup);
+
+            // Create continent points
+            createGlobeParticles();
+
+            // Mouse controls
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('click', onCanvasClick);
+            canvas.addEventListener('wheel', onMouseWheel, false);
+
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+                    globeGroup.rotation.y += deltaX * 0.01;
+                    globeGroup.rotation.x += deltaY * 0.01;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            window.addEventListener('resize', onWindowResize);
+
+            animate();
+        }
+
+        function createGlobeParticles() {
+            const continents = [
+                { latRange: [25, 70], lngRange: [-170, -50], density: 0.7 },
+                { latRange: [-55, 12], lngRange: [-82, -35], density: 0.6 },
+                { latRange: [35, 72], lngRange: [-10, 40], density: 0.8 },
+                { latRange: [-35, 37], lngRange: [-18, 52], density: 0.6 },
+                { latRange: [5, 75], lngRange: [40, 180], density: 0.7 },
+                { latRange: [-45, -10], lngRange: [110, 155], density: 0.5 }
+            ];
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+
+            continents.forEach(continent => {
+                const pointCount = Math.floor((continent.latRange[1] - continent.latRange[0]) *
+                                             (continent.lngRange[1] - continent.lngRange[0]) *
+                                             continent.density / 10);
+
+                for (let i = 0; i < pointCount; i++) {
+                    const lat = continent.latRange[0] + Math.random() * (continent.latRange[1] - continent.latRange[0]);
+                    const lng = continent.lngRange[0] + Math.random() * (continent.lngRange[1] - continent.lngRange[0]);
+
+                    const phi = (90 - lat) * Math.PI / 180;
+                    const theta = (lng + 180) * Math.PI / 180;
+
+                    const x = Math.sin(phi) * Math.cos(theta);
+                    const y = Math.cos(phi);
+                    const z = Math.sin(phi) * Math.sin(theta);
+
+                    positions.push(x, y, z);
+                    colors.push(0.7, 0.7, 0.8);
+                }
+            });
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
+            const material = new THREE.PointsMaterial({ size: 0.02, sizeAttenuation: true, vertexColors: true });
+            particles = new THREE.Points(geometry, material);
+            globeGroup.add(particles);
+
+            // Add wireframe sphere outline
+            const wireGeometry = new THREE.IcosahedronGeometry(1, 16);
+            const wireMaterial = new THREE.LineBasicMaterial({ color: 0x333, transparent: true, opacity: 0.3 });
+            const wireframe = new THREE.LineSegments(wireGeometry, wireMaterial);
+            globeGroup.add(wireframe);
+        }
+
+        function addMinePins(locations) {
+            // Remove old pins
+            globeGroup.children.forEach(child => {
+                if (child.userData.isPin) {
+                    globeGroup.remove(child);
+                }
+            });
+
+            // Add new pins
+            locations.forEach((loc, idx) => {
+                const phi = (90 - loc.lat) * Math.PI / 180;
+                const theta = (loc.lng + 180) * Math.PI / 180;
+
+                const x = Math.sin(phi) * Math.cos(theta) * 1.05;
+                const y = Math.cos(phi) * 1.05;
+                const z = Math.sin(phi) * Math.sin(theta) * 1.05;
+
+                const pinGeometry = new THREE.SphereGeometry(0.06, 8, 8);
+                const pinMaterial = new THREE.MeshBasicMaterial({ color: 0xff6b00 });
+                const pin = new THREE.Mesh(pinGeometry, pinMaterial);
+                pin.position.set(x, y, z);
+                pin.userData.isPin = true;
+                pin.userData.location = loc;
+
+                globeGroup.add(pin);
+
+                // Add glow effect
+                pin.scale.set(1, 1, 1);
+                const startScale = 1;
+                const maxScale = 1.5;
+                const duration = 800 + idx * 200;
+
+                const startTime = Date.now();
+                const animatePin = () => {
+                    const elapsed = (Date.now() - startTime) % duration;
+                    const progress = elapsed / duration;
+                    const scale = startScale + (maxScale - startScale) * Math.abs(Math.sin(progress * Math.PI));
+                    pin.scale.set(scale, scale, scale);
+
+                    if (pin.parent) {
+                        requestAnimationFrame(animatePin);
+                    }
+                };
+                animatePin();
+            });
+        }
+
+        function onMouseMove(event) {
+            const canvas = document.getElementById('canvas');
+            mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
+        }
+
+        function onCanvasClick(event) {
+            // If clicking empty globe area, close panel
+            const rect = event.currentTarget.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            const canvas = document.getElementById('canvas');
+            const raycasterFromClick = new THREE.Raycaster();
+            const mouseFromClick = new THREE.Vector2();
+            mouseFromClick.x = (clickX / canvas.clientWidth) * 2 - 1;
+            mouseFromClick.y = -(clickY / canvas.clientHeight) * 2 + 1;
+            raycasterFromClick.setFromCamera(mouseFromClick, camera);
+
+            const pinsToCheck = globeGroup.children.filter(c => c.userData.isPin);
+            const intersects = raycasterFromClick.intersectObjects(pinsToCheck);
+
+            if (intersects.length === 0) {
+                closePanel();
+            }
+        }
+
+        function onMouseWheel(event) {
+            event.preventDefault();
+            const zoomSpeed = 0.1;
+            camera.position.z += event.deltaY > 0 ? zoomSpeed : -zoomSpeed;
+            camera.position.z = Math.max(1, Math.min(5, camera.position.z));
+        }
+
+        function onWindowResize() {
+            const canvas = document.getElementById('canvas');
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            globeGroup.rotation.y += 0.0001;
+            renderer.render(scene, camera);
+        }
+
+        // UI FUNCTIONS
+        function buildSidebar() {
+            const sidebarContent = document.getElementById('sidebarContent');
+            sidebarContent.innerHTML = '';
+
+            const categoryOrder = ['ferrous', 'heavy', 'light', 'precious', 'rare', 'ree', 'metalloid'];
+
+            categoryOrder.forEach(catId => {
+                const metals = METALS_DATA.filter(m => m.category === catId);
+                if (metals.length === 0) return;
+
+                const group = document.createElement('div');
+                group.className = 'accordion-group';
+
+                const header = document.createElement('div');
+                header.className = 'accordion-header active';
+                header.innerHTML = `<span class="accordion-arrow">▶</span> ${CATEGORY_NAMES[catId]}`;
+
+                const content = document.createElement('div');
+                content.className = 'accordion-content active';
+
+                metals.forEach(metal => {
+                    const item = document.createElement('button');
+                    item.className = `metal-item ${metal.category}`;
+                    item.dataset.metalId = metal.id;
+                    item.innerHTML = `
+                        <div class="metal-symbol">${metal.symbol}</div>
+                        <div class="metal-names">
+                            <div class="metal-name-ko">${metal.name}</div>
+                            <div class="metal-name-en">${metal.nameEn}</div>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => selectMetal(metal));
+                    content.appendChild(item);
+                });
+
+                header.addEventListener('click', () => {
+                    header.classList.toggle('active');
+                    content.classList.toggle('active');
+                    header.querySelector('.accordion-arrow').style.transform =
+                        header.classList.contains('active') ? 'rotate(90deg)' : 'rotate(0deg)';
+                });
+
+                group.appendChild(header);
+                group.appendChild(content);
+                sidebarContent.appendChild(group);
+            });
+        }
+
+        function selectMetal(metal) {
+            selectedMetal = metal;
+
+            // Update sidebar selection
+            document.querySelectorAll('.metal-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`[data-metal-id="${metal.id}"]`).classList.add('selected');
+
+            // Show panel
+            const panel = document.getElementById('infoPanel');
+            panel.className = 'info-panel open ' + metal.category;
+
+            // Update panel header
+            document.getElementById('panelMetalNameKo').textContent = metal.name;
+            document.getElementById('panelMetalNameEn').textContent = metal.nameEn;
+            document.getElementById('panelMetalSymbol').textContent = metal.symbol;
+            document.getElementById('panelMetalCategory').textContent = CATEGORY_NAMES[metal.category];
+
+            // Ore info
+            document.getElementById('oreNameKo').textContent = metal.ore.name;
+            document.getElementById('oreType').textContent = metal.ore.type;
+
+            // Locations
+            const locationsList = document.getElementById('locationsList');
+            locationsList.innerHTML = metal.locations.map(loc => `
+                <div class="location-item">
+                    <div>
+                        <div class="location-name">${loc.name}</div>
+                        <div class="location-country">${loc.country}</div>
+                    </div>
+                    <div class="location-pct">${loc.pct}%</div>
+                </div>
+            `).join('');
+
+            // Properties
+            const propertiesGrid = document.getElementById('propertiesGrid');
+            const props = [
+                { label: '밀도', value: metal.properties.density },
+                { label: '용융점', value: metal.properties.meltingPoint },
+                { label: '인장강도', value: metal.properties.tensileStrength },
+                { label: '전도율', value: metal.properties.conductivity },
+                { label: '경도', value: metal.properties.hardness },
+                { label: '결정구조', value: metal.properties.crystalStructure }
+            ];
+            propertiesGrid.innerHTML = props.map(p => `
+                <div class="property-card ${metal.category}">
+                    <div class="property-label">${p.label}</div>
+                    <div class="property-value">${p.value}</div>
+                </div>
+            `).join('');
+
+            // Comparative bars
+            const barsGrid = document.getElementById('barsGrid');
+            const barLabels = ['강도', '내식성', '전도성', '경량성', '내열성'];
+            const barKeys = ['strength', 'corrosionRes', 'conductivity', 'lightweight', 'heatRes'];
+            barsGrid.innerHTML = barLabels.map((label, idx) => {
+                const value = metal.bars[barKeys[idx]];
+                return `
+                    <div class="bar-item">
+                        <div class="bar-label">
+                            <span class="bar-label-name">${label}</span>
+                            <span class="bar-label-value">${value}</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill ${metal.category}" style="width: ${value}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Process
+            const processList = document.getElementById('processList');
+            processList.innerHTML = metal.process.map((step, idx) => `
+                <div class="process-step">${step}</div>
+                ${idx < metal.process.length - 1 ? '<div class="process-arrow">→</div>' : ''}
+            `).join('');
+
+            // Carbon
+            const carbonGauge = document.getElementById('carbonGauge');
+            let carbonColor = '#4ade80';
+            if (metal.carbon > 5) carbonColor = '#fbbf24';
+            if (metal.carbon > 20) carbonColor = '#f87171';
+            const carbonPercent = Math.min(100, (metal.carbon / 50) * 100);
+            carbonGauge.innerHTML = `
+                <div class="carbon-value">${metal.carbon} kg CO₂/kg</div>
+                <div class="carbon-bar">
+                    <div class="carbon-fill" style="width: ${carbonPercent}%; background-color: ${carbonColor};"></div>
+                </div>
+                <div class="carbon-label">${metal.carbon > 20 ? '높음' : metal.carbon > 5 ? '중간' : '낮음'}</div>
+            `;
+
+            // Applications
+            const appsList = document.getElementById('appsList');
+            appsList.innerHTML = metal.applications.map(app => `
+                <div class="app-chip">${app}</div>
+            `).join('');
+
+            // Resources
+            const resourcesInfo = document.getElementById('resourcesInfo');
+            resourcesInfo.innerHTML = `
+                <div class="resource-row">
+                    <span class="resource-label">매장량</span>
+                    <span class="resource-value">${metal.resources.reserves}</span>
+                </div>
+                <div class="resource-row">
+                    <span class="resource-label">채광량</span>
+                    <span class="resource-value">${metal.resources.mined}</span>
+                </div>
+                <div class="resource-row">
+                    <span class="resource-label">가격</span>
+                    <span class="resource-value">${metal.resources.price}</span>
+                </div>
+            `;
+
+            // Chart
+            const ctx = document.getElementById('resourceChart');
+            if (chart) chart.destroy();
+
+            const reserves = parseFloat(metal.resources.reserves);
+            const mined = parseFloat(metal.resources.mined);
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['매장량', '채광량'],
+                    datasets: [{
+                        label: '양 (톤)',
+                        data: [reserves, mined],
+                        backgroundColor: ['rgba(60, 52, 137, 0.7)', 'rgba(80, 80, 100, 0.7)'],
+                        borderColor: ['#3C3489', '#505064'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#999' },
+                            grid: { color: '#222' }
+                        },
+                        x: {
+                            ticks: { color: '#999' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Story
+            const storySection = document.getElementById('storySection');
+            if (typeof METAL_STORIES !== 'undefined' && METAL_STORIES[metal.id]) {
+                storySection.innerHTML = METAL_STORIES[metal.id].map(story => `
+                    <div class="story-card" style="background:#1a1a22;padding:14px;border-radius:6px;margin-bottom:10px;border-left:3px solid var(--color, #534AB7);">
+                        <div style="font-weight:700;color:#fff;margin-bottom:8px;font-size:13px;">${story.title}</div>
+                        <div style="font-size:12px;color:#bbb;line-height:1.7;">${story.content}</div>
+                    </div>
+                `).join('');
+            } else {
+                storySection.innerHTML = '<div class="story-content" style="color:#666;font-size:12px;">이 금속의 스토리 콘텐츠를 준비 중입니다.</div>';
+            }
+
+            // Add mine pins to globe
+            addMinePins(metal.locations);
+        }
+
+        function closePanel() {
+            document.getElementById('infoPanel').classList.remove('open');
+            document.querySelectorAll('.metal-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            globeGroup.children.forEach(child => {
+                if (child.userData.isPin) {
+                    globeGroup.remove(child);
+                }
+            });
+            selectedMetal = null;
+        }
+
+        function filterMetals(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            document.querySelectorAll('.metal-item').forEach(item => {
+                const metal = METALS_DATA.find(m => m.id === item.dataset.metalId);
+                const matches = metal.name.includes(term) ||
+                               metal.nameEn.toLowerCase().includes(term) ||
+                               metal.symbol.toLowerCase().includes(term);
+                item.style.display = matches ? 'flex' : 'none';
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initGlobe();
+            buildSidebar();
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                filterMetals(e.target.value);
+            });
+
+            document.getElementById('panelCloseBtn').addEventListener('click', closePanel);
+
+            // Close panel when clicking on empty area
+            document.getElementById('canvas').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('canvas')) {
+                    closePanel();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
