@@ -20,7 +20,7 @@
 
         .container {
             display: flex;
-            height: 100vh;
+            height: calc(100vh - 20px);
             width: 100vw;
         }
 
@@ -600,10 +600,121 @@
         .pulsing-point {
             animation: pulse 2s infinite;
         }
+
+        /* Source ticker bar */
+        .source-ticker-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: rgba(30, 30, 50, 0.85);
+            backdrop-filter: blur(4px);
+            overflow: hidden;
+            z-index: 9999;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .source-ticker-track {
+            display: flex;
+            width: max-content;
+            animation: ticker-scroll 120s linear infinite;
+        }
+        .source-ticker-track:hover {
+            animation-play-state: paused;
+        }
+        .source-ticker-content {
+            display: flex;
+            align-items: center;
+            height: 20px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .source-ticker-content span {
+            font-size: 10px;
+            color: rgba(255,255,255,0.55);
+            padding: 0 18px;
+            letter-spacing: 0.02em;
+            font-family: 'SF Mono', 'Consolas', monospace;
+        }
+        .source-ticker-content span a {
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .source-ticker-content span a:hover {
+            color: rgba(255,255,255,0.9);
+        }
+        .source-ticker-content .src-dot {
+            display: inline-block;
+            width: 3px;
+            height: 3px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            margin: 0 6px;
+            vertical-align: middle;
+        }
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Source Ticker -->
+    <div class="source-ticker-wrapper">
+        <div class="source-ticker-track">
+            <div class="source-ticker-content">
+                <span>DATA SOURCES</span><span class="src-dot"></span>
+                <span><a href="https://worldsteel.org" target="_blank">World Steel Association (2024)</a> — Fe, Steel carbon footprint</span><span class="src-dot"></span>
+                <span><a href="https://internationalcopper.org" target="_blank">International Copper Association (ICA 2022)</a> — Cu emissions</span><span class="src-dot"></span>
+                <span><a href="https://www.zinc.org/life-cycle-assessment/" target="_blank">International Zinc Association LCA</a> — Zn 3.89 tCO₂/t</span><span class="src-dot"></span>
+                <span><a href="https://www.nature.com/articles/s41467-024-54634-y" target="_blank">Nature Communications (2024)</a> — Li battery carbon footprint</span><span class="src-dot"></span>
+                <span><a href="https://international-aluminium.org" target="_blank">International Aluminium Institute (IAI)</a> — Al ~16.5 tCO₂/t global avg</span><span class="src-dot"></span>
+                <span><a href="https://www.sciencedirect.com/science/article/abs/pii/S0921344915000865" target="_blank">ScienceDirect — Pidgeon Process LCA</a> — Mg ~22-37 tCO₂/t</span><span class="src-dot"></span>
+                <span><a href="https://www.mdpi.com/1996-1073/13/21/5664" target="_blank">MDPI Energies (2020)</a> — Ni GHG emissions ~6-22 tCO₂/t</span><span class="src-dot"></span>
+                <span><a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0101298" target="_blank">PLOS ONE — LCA of 63 Metals</a> — comprehensive cradle-to-gate</span><span class="src-dot"></span>
+                <span><a href="https://greet.anl.gov" target="_blank">Argonne GREET Model</a> — Co, Ni, Li lifecycle analysis</span><span class="src-dot"></span>
+                <span><a href="https://www.usgs.gov/centers/national-minerals-information-center" target="_blank">USGS Mineral Commodity Summaries (2024)</a> — reserves, production data</span><span class="src-dot"></span>
+                <span><a href="https://www.bgr.bund.de" target="_blank">BGR (German Federal Geological Survey)</a> — global mineral resources</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/143" target="_blank">물질의 세계 Part 1</a> — 모래/규소 공급망 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/150" target="_blank">물질의 세계 Part 3</a> — 철/강철 산업사 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/151" target="_blank">물질의 세계 Part 4</a> — 구리 공급망과 심해채굴 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/145" target="_blank">물질의 세계 최종편</a> — 리튬과 배터리 시대 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://www.sciencedirect.com/science/article/pii/S0959652618332992" target="_blank">ScienceDirect — WC-Co LCA</a> — W, Co cemented carbide</span><span class="src-dot"></span>
+                <span><a href="https://www.carbonchain.com" target="_blank">CarbonChain</a> — commodity emissions intensity</span><span class="src-dot"></span>
+                <span><a href="https://www.boliden.com" target="_blank">Boliden Metals Carbon Footprint (2021)</a> — Cu, Zn, Pb, Ni</span><span class="src-dot"></span>
+                <span><a href="https://climate.mit.edu/ask-mit/how-much-co2-emitted-manufacturing-batteries" target="_blank">MIT Climate Portal</a> — battery manufacturing CO₂</span><span class="src-dot"></span>
+                <span>globe.gl — 3D WebGL Globe Visualization</span><span class="src-dot"></span>
+                <span>three.js — 3D Rendering Engine</span><span class="src-dot"></span>
+            </div>
+            <div class="source-ticker-content">
+                <span>DATA SOURCES</span><span class="src-dot"></span>
+                <span><a href="https://worldsteel.org" target="_blank">World Steel Association (2024)</a> — Fe, Steel carbon footprint</span><span class="src-dot"></span>
+                <span><a href="https://internationalcopper.org" target="_blank">International Copper Association (ICA 2022)</a> — Cu emissions</span><span class="src-dot"></span>
+                <span><a href="https://www.zinc.org/life-cycle-assessment/" target="_blank">International Zinc Association LCA</a> — Zn 3.89 tCO₂/t</span><span class="src-dot"></span>
+                <span><a href="https://www.nature.com/articles/s41467-024-54634-y" target="_blank">Nature Communications (2024)</a> — Li battery carbon footprint</span><span class="src-dot"></span>
+                <span><a href="https://international-aluminium.org" target="_blank">International Aluminium Institute (IAI)</a> — Al ~16.5 tCO₂/t global avg</span><span class="src-dot"></span>
+                <span><a href="https://www.sciencedirect.com/science/article/abs/pii/S0921344915000865" target="_blank">ScienceDirect — Pidgeon Process LCA</a> — Mg ~22-37 tCO₂/t</span><span class="src-dot"></span>
+                <span><a href="https://www.mdpi.com/1996-1073/13/21/5664" target="_blank">MDPI Energies (2020)</a> — Ni GHG emissions ~6-22 tCO₂/t</span><span class="src-dot"></span>
+                <span><a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0101298" target="_blank">PLOS ONE — LCA of 63 Metals</a> — comprehensive cradle-to-gate</span><span class="src-dot"></span>
+                <span><a href="https://greet.anl.gov" target="_blank">Argonne GREET Model</a> — Co, Ni, Li lifecycle analysis</span><span class="src-dot"></span>
+                <span><a href="https://www.usgs.gov/centers/national-minerals-information-center" target="_blank">USGS Mineral Commodity Summaries (2024)</a> — reserves, production data</span><span class="src-dot"></span>
+                <span><a href="https://www.bgr.bund.de" target="_blank">BGR (German Federal Geological Survey)</a> — global mineral resources</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/143" target="_blank">물질의 세계 Part 1</a> — 모래/규소 공급망 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/150" target="_blank">물질의 세계 Part 3</a> — 철/강철 산업사 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/151" target="_blank">물질의 세계 Part 4</a> — 구리 공급망과 심해채굴 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://brunch.co.kr/@andy7gv4/145" target="_blank">물질의 세계 최종편</a> — 리튬과 배터리 시대 (Ed Conway)</span><span class="src-dot"></span>
+                <span><a href="https://www.sciencedirect.com/science/article/pii/S0959652618332992" target="_blank">ScienceDirect — WC-Co LCA</a> — W, Co cemented carbide</span><span class="src-dot"></span>
+                <span><a href="https://www.carbonchain.com" target="_blank">CarbonChain</a> — commodity emissions intensity</span><span class="src-dot"></span>
+                <span><a href="https://www.boliden.com" target="_blank">Boliden Metals Carbon Footprint (2021)</a> — Cu, Zn, Pb, Ni</span><span class="src-dot"></span>
+                <span><a href="https://climate.mit.edu/ask-mit/how-much-co2-emitted-manufacturing-batteries" target="_blank">MIT Climate Portal</a> — battery manufacturing CO₂</span><span class="src-dot"></span>
+                <span>globe.gl — 3D WebGL Globe Visualization</span><span class="src-dot"></span>
+                <span>three.js — 3D Rendering Engine</span><span class="src-dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 20px;">
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -718,7 +829,7 @@
                 },
                 bars: {strength: 18, corrosionRes: 10, conductivity: 55, lightweight: 15, heatRes: 60},
                 process: ['채광·발파', '파쇄·선별', '자력/비중 선별', '소결(펠릿화)', '고로 제련(1,400°C+)', '정련·주조'],
-                carbon: 2.75,
+                carbon: 2,
                 applications: ['변압기 코어', '전자석', '촉매', '합금 기반 재료'],
                 resources: {reserves: '850억 톤', mined: '~200억 톤', price: '$100-120/톤 (철광석)'}
             },
@@ -743,7 +854,7 @@
                 },
                 bars: {strength: 80, corrosionRes: 15, conductivity: 45, lightweight: 15, heatRes: 55},
                 process: ['철광석 채광', '고로 제련 (선철)', '전로 정련 (BOF)', '합금 원소 첨가', '연속주조', '열간/냉간 압연'],
-                carbon: 2.8,
+                carbon: 2.1,
                 applications: ['건축 구조재', '철근', '파이프', '철도 레일', '자동차 부품'],
                 resources: {reserves: '850억 톤 (철광석)', mined: '~320억 톤(강철 누적)', price: '$600-800/톤'}
             },
@@ -763,7 +874,7 @@
                 },
                 bars: {strength: 85, corrosionRes: 30, conductivity: 40, lightweight: 14, heatRes: 70},
                 process: ['기본 강철 제조', '합금 원소(Cr,Ni,Mo,V) 첨가', '진공 정련', '연속주조', '열처리(담금질·뜨임)', '압연·단조'],
-                carbon: 3.2,
+                carbon: 3.5,
                 applications: ['기어·베어링', '항공 구조재', '고강도 볼트', '금형'],
                 resources: {reserves: '풍부 (합금원소 의존)', mined: '~50억 톤', price: '$2,000-3,500/톤'}
             },
@@ -783,7 +894,7 @@
                 },
                 bars: {strength: 70, corrosionRes: 90, conductivity: 20, lightweight: 16, heatRes: 75},
                 process: ['기본 강철 제조', 'Cr 12%+ / Ni 첨가', 'AOD 정련', '연속주조', '열간압연', '냉간압연·소둔·산세'],
-                carbon: 3.5,
+                carbon: 6,
                 applications: ['주방기기', '의료기기', '건축 외장재', '화학 플랜트', '해양 구조물'],
                 resources: {reserves: '풍부', mined: '~15억 톤', price: '$3,000-5,000/톤'}
             },
@@ -802,7 +913,7 @@
                 },
                 bars: {strength: 55, corrosionRes: 20, conductivity: 40, lightweight: 18, heatRes: 65},
                 process: ['철광석 채광', '고로 제련', '큐폴라/전기로 재용해', '접종제 첨가', '주형 주조', '열처리(필요시)'],
-                carbon: 2.7,
+                carbon: 1.8,
                 applications: ['엔진 블록', '맨홀 뚜껑', '배관', '주방 조리도구', '기계 베드'],
                 resources: {reserves: '풍부', mined: '~30억 톤', price: '$1,200-1,800/톤'}
             },
@@ -821,7 +932,7 @@
                 },
                 bars: {strength: 95, corrosionRes: 15, conductivity: 30, lightweight: 14, heatRes: 80},
                 process: ['고순도 원료 선별', '전기로 용해', '진공 탈가스(VD)', 'ESR/VAR 재용해', '열간 단조', '열처리(담금질·뜨임·심냉)'],
-                carbon: 4.0,
+                carbon: 6.5,
                 applications: ['절삭공구', '금형', '드릴·탭', '프레스 다이'],
                 resources: {reserves: '풍부 (합금원소 의존)', mined: '~5억 톤', price: '$4,000-8,000/톤'}
             },
@@ -846,7 +957,7 @@
                 },
                 bars: {strength: 45, corrosionRes: 70, conductivity: 100, lightweight: 15, heatRes: 55},
                 process: ['노천/지하 채광', '파쇄·부유선광', '동정광 제련', '전환(Fe/S 제거)', '화학정련', '전기분해 정련(99.99%)'],
-                carbon: 3.5,
+                carbon: 4.9,
                 applications: ['전선·케이블', '배관', 'PCB/전자기기', '열교환기', '황동·청동 합금'],
                 resources: {reserves: '10억 톤', mined: '~7억 톤', price: '$9,500-11,000/톤'}
             },
@@ -866,7 +977,7 @@
                 },
                 bars: {strength: 30, corrosionRes: 60, conductivity: 28, lightweight: 22, heatRes: 20},
                 process: ['채광·파쇄', '부유선광(50-60% Zn)', '배소(ZnS→ZnO)', 'H₂SO₄ 침출', '전해채취', '용해·주조'],
-                carbon: 3.1,
+                carbon: 3.9,
                 applications: ['아연도금(갈바)', '황동 합금', '다이캐스팅', '배터리', '화장품'],
                 resources: {reserves: '3.1억 톤', mined: '~4억 톤', price: '$3,000-3,500/톤'}
             },
@@ -885,7 +996,7 @@
                 },
                 bars: {strength: 15, corrosionRes: 65, conductivity: 15, lightweight: 5, heatRes: 15},
                 process: ['채광·파쇄', '부유선광', '배소(PbS→PbO)', '용광로 제련', '정련(불순물 제거)', '전해 정제'],
-                carbon: 2.5,
+                carbon: 2,
                 applications: ['납축전지', '방사선 차폐', '땜납', '어망 추'],
                 resources: {reserves: '9,000만 톤', mined: '~6억 톤', price: '$2,200-2,600/톤'}
             },
@@ -904,7 +1015,7 @@
                 },
                 bars: {strength: 20, corrosionRes: 70, conductivity: 22, lightweight: 22, heatRes: 10},
                 process: ['충적/경암 채광', '파쇄·비중선별', '배소(불순물 제거)', '환원 제련', '정련·정제', '주조'],
-                carbon: 2.0,
+                carbon: 14.5,
                 applications: ['땜납(전자)', '통조림 코팅', '청동 합금', '베어링'],
                 resources: {reserves: '470만 톤', mined: '~1억 톤', price: '$36,000-42,000/톤'}
             },
@@ -924,7 +1035,7 @@
                 },
                 bars: {strength: 65, corrosionRes: 80, conductivity: 25, lightweight: 14, heatRes: 80},
                 process: ['채광(노천/지하)', '파쇄·선광', 'HPAL 고압산침출', 'MHP 생성', '제련·정련', '전해 정제'],
-                carbon: 10.0,
+                carbon: 13,
                 applications: ['스테인리스강(65%)', '초합금', '도금', '배터리(EV)', '촉매'],
                 resources: {reserves: '1억 톤', mined: '~1.3억 톤', price: '$18,000-22,000/톤'}
             },
@@ -944,7 +1055,7 @@
                 },
                 bars: {strength: 60, corrosionRes: 60, conductivity: 28, lightweight: 14, heatRes: 85},
                 process: ['채광(주로 콩고)', '파쇄·정광', '배소/H₂SO₄ 침출', '용매 추출', '전해채취', '정련·용해'],
-                carbon: 8.3,
+                carbon: 10,
                 applications: ['리튬이온 배터리(40%+)', '초합금', '영구자석', '촉매', '도금'],
                 resources: {reserves: '760만 톤', mined: '~500만 톤', price: '$33,000-37,000/톤'}
             },
@@ -964,7 +1075,7 @@
                 },
                 bars: {strength: 55, corrosionRes: 80, conductivity: 62, lightweight: 95, heatRes: 30},
                 process: ['보크사이트 채광', '바이어법(NaOH 침출)', 'Al(OH)₃ 침전', '하소→알루미나(Al₂O₃)', '홀-에루법 전기분해', '주조·압연'],
-                carbon: 8.0,
+                carbon: 16.5,
                 applications: ['항공기', '자동차', '건축 파사드', '음료캔', '전선'],
                 resources: {reserves: '300억 톤(보크사이트)', mined: '~25억 톤', price: '$2,500-3,200/톤'}
             },
@@ -983,7 +1094,7 @@
                 },
                 bars: {strength: 40, corrosionRes: 20, conductivity: 38, lightweight: 100, heatRes: 25},
                 process: ['돌로마이트 채굴/해수 추출', '하소(MgO 생성)', '피전법(실리콘환원)', '또는 전해법', '정련·주조'],
-                carbon: 14.0,
+                carbon: 26,
                 applications: ['자동차 부품', '노트북·휴대폰 케이스', '항공우주', '불꽃놀이'],
                 resources: {reserves: '24억 톤', mined: '~2.5억 톤', price: '$4,500-6,500/톤'}
             },
@@ -1003,7 +1114,7 @@
                 },
                 bars: {strength: 90, corrosionRes: 95, conductivity: 8, lightweight: 80, heatRes: 88},
                 process: ['일메나이트/루타일 채광', '염소화(TiCl₄ 생성)', '크롤법(Mg환원)', '진공아크 재용해', '단조·압연'],
-                carbon: 36.0,
+                carbon: 10,
                 applications: ['항공기 프레임', '의료 임플란트', '고급 스포츠용품', '해양 구조물'],
                 resources: {reserves: '2.7억 톤', mined: '~1억 톤', price: '$14,000-18,000/톤(스펀지)'}
             },
@@ -1041,7 +1152,7 @@
                 },
                 bars: {strength: 20, corrosionRes: 100, conductivity: 72, lightweight: 2, heatRes: 60},
                 process: ['노천/지하 채광', '파쇄·분쇄', '시안화 침출', '활성탄 흡착', '전해 정련', '주조(도레바)'],
-                carbon: 20000,
+                carbon: 26000,
                 applications: ['전자기기 접점', '보석·화폐', '반도체 본딩와이어', '치과'],
                 resources: {reserves: '6만 톤', mined: '~22만 톤(역사 누적)', price: '$65,000-95,000/kg'}
             },
@@ -1061,7 +1172,7 @@
                 },
                 bars: {strength: 25, corrosionRes: 50, conductivity: 100, lightweight: 8, heatRes: 50},
                 process: ['Cu/Pb 제련 시 부산물 회수', '부유선광', '회취법(납과 분리)', '전해 정련', '주조'],
-                carbon: 104,
+                carbon: 110,
                 applications: ['전자부품', '태양광 패널', '사진·은경', '보석', '항균 코팅'],
                 resources: {reserves: '71만 톤', mined: '~175만 톤', price: '$900-1,100/kg'}
             },
@@ -1145,7 +1256,7 @@
                 },
                 bars: {strength: 5, corrosionRes: 5, conductivity: 18, lightweight: 100, heatRes: 5},
                 process: ['염수 추출/경암 채광', '증발 농축(염수) 또는 배소(경암)', 'H₂SO₄ 침출', '탄산리튬 침전', '결정화', '수산화리튬 전환'],
-                carbon: 5.0,
+                carbon: 10,
                 applications: ['리튬이온 배터리(80%+)', '세라믹', '윤활제', '의약품', '원자력'],
                 resources: {reserves: '2,300만 톤', mined: '~800만 톤', price: '$10,000-15,000/톤'}
             },
@@ -1244,7 +1355,7 @@
                 },
                 bars: {strength: 75, corrosionRes: 60, conductivity: 30, lightweight: 8, heatRes: 95},
                 process: ['반암동/몰리브덴 채광', '부유선광(황화물 농축)', '배소(MoO₃ 생성)', 'NH₃ 침출', 'H₂ 환원(Mo 분말)', '소결·용해'],
-                carbon: 4.0,
+                carbon: 8,
                 applications: ['강합금(40%)', '촉매(30%)', '윤활제', '전극', '필라멘트'],
                 resources: {reserves: '1,700만 톤', mined: '~500만 톤', price: '$50-70/kg'}
             },
@@ -1264,7 +1375,7 @@
                 },
                 bars: {strength: 55, corrosionRes: 90, conductivity: 13, lightweight: 3, heatRes: 97},
                 process: ['탄탈라이트 채광', '파쇄·비중선별', 'HF 산침출', '용매추출·정제', '탄화염소화→환원', '소결·용해'],
-                carbon: 8.0,
+                carbon: 12,
                 applications: ['커패시터(35%)', '초합금', '외과 임플란트', '첨단 전자부품'],
                 resources: {reserves: '충분(DRC 집중)', mined: '~2만 톤', price: '$150-250/kg'}
             },
@@ -1284,7 +1395,7 @@
                 },
                 bars: {strength: 50, corrosionRes: 30, conductivity: 3, lightweight: 20, heatRes: 60},
                 process: ['망간광 채광', '파쇄·세척', '코크스 환원(페로망간)', 'H₂SO₄ 침출', '전해채취(순망간)', '주조'],
-                carbon: 5.5,
+                carbon: 4.5,
                 applications: ['강합금(90%)', '배터리', '세라믹', '유리 착색'],
                 resources: {reserves: '수십억 톤', mined: '~5억 톤', price: '$1,500-2,000/톤'}
             },
@@ -1343,7 +1454,7 @@
                 },
                 bars: {strength: 40, corrosionRes: 20, conductivity: 5, lightweight: 22, heatRes: 50},
                 process: ['REE 광석 채광', 'H₂SO₄/HCl 침출', '용매추출(개별 REE 분리)', '옥살산 침전', '하소→Nd₂O₃', '용융염 전해(Nd 금속)'],
-                carbon: 15.0,
+                carbon: 30,
                 applications: ['NdFeB 영구자석(80%+)', '레이저', '광섬유 증폭기', '촉매'],
                 resources: {reserves: '1,200만 톤(REO)', mined: '~200만 톤', price: '$80-120/kg(산화물)'}
             },
@@ -1362,7 +1473,7 @@
                 },
                 bars: {strength: 45, corrosionRes: 20, conductivity: 3, lightweight: 15, heatRes: 60},
                 process: ['이온흡착광 채광', '(NH₄)₂SO₄ 침출', '용매추출(분리)', '옥살산 침전', '하소', '금속환원'],
-                carbon: 18.0,
+                carbon: 40,
                 applications: ['고온 영구자석(Dy첨가)', '원자로 제어봉', '방사선 흡수체'],
                 resources: {reserves: 'REE 매장량 내', mined: '~1.5만 톤', price: '$300-500/kg'}
             },
@@ -1381,7 +1492,7 @@
                 },
                 bars: {strength: 30, corrosionRes: 15, conductivity: 4, lightweight: 24, heatRes: 35},
                 process: ['REE 광석 채광', '산침출', '용매추출(분리)', '옥살산 침전', '하소→CeO₂'],
-                carbon: 10.0,
+                carbon: 15,
                 applications: ['자동차 촉매', '유리 연마제', '연료전지', '자외선 차단'],
                 resources: {reserves: 'REE 내 최다(~50%)', mined: '~50만 톤', price: '$5-8/kg(산화물)'}
             },
@@ -1400,7 +1511,7 @@
                 },
                 bars: {strength: 25, corrosionRes: 15, conductivity: 4, lightweight: 30, heatRes: 40},
                 process: ['REE 광석 채광', '산침출', '용매추출', '옥살산 침전', '하소→La₂O₃'],
-                carbon: 10.0,
+                carbon: 15,
                 applications: ['촉매(자동차 배기)', 'NiMH 배터리', '연마 화합물', '광학 유리'],
                 resources: {reserves: 'REE 매장량 내', mined: '~30만 톤', price: '$5-8/kg(산화물)'}
             },
@@ -1419,7 +1530,7 @@
                 },
                 bars: {strength: 35, corrosionRes: 15, conductivity: 4, lightweight: 25, heatRes: 40},
                 process: ['REE 광석 채광', '산침출', '용매추출(분리)', '옥살산 침전', '하소→Pr₆O₁₁'],
-                carbon: 12.0,
+                carbon: 25,
                 applications: ['영구자석(Pr-Fe-B)', '촉매', '광학소재', '착색제(세라믹 녹색)'],
                 resources: {reserves: 'REE 매장량 내', mined: '~2만 톤', price: '$80-100/kg(산화물)'}
             },
@@ -1444,7 +1555,7 @@
                 },
                 bars: {strength: 40, corrosionRes: 80, conductivity: 1, lightweight: 90, heatRes: 65},
                 process: ['석영/규사 채광', '세척·분급', '전기로 환원(1,800°C+)', '야금급 Si 생산', 'SiHCl₃ 전환(반도체급)', '초크랄스키법 단결정 성장'],
-                carbon: 5.0,
+                carbon: 9,
                 applications: ['반도체/IC(99.9999999%)', '태양전지(25%)', '알루미늄 합금(60%)', '실리콘'],
                 resources: {reserves: '사실상 무한(석영 편재)', mined: '~100억 톤', price: '$3-5/kg(야금급) | $100-200/kg(반도체급)'}
             }
