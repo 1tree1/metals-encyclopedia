@@ -1,0 +1,89 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1a1a2e', 'primaryTextColor': '#fff', 'lineColor': '#555', 'secondaryColor': '#dfe6e9'}, 'flowchart': {'nodeSpacing': 18, 'rankSpacing': 45, 'curve': 'basis'}}}%%
+
+graph TB
+    ROOT["🔨 철금속 Fe-C 계<br/>Iron-Carbon System"]
+
+    ROOT --> PURE["순철 Pure Iron<br/>C &lt; 0.02%"]
+    ROOT --> STEEL["강 Steel<br/>0.02% ≤ C ≤ 2.11%"]
+    ROOT --> CASTIRON["주철 Cast Iron<br/>2.11% &lt; C ≤ 6.67%"]
+
+    %% ═══════════════════════════════════
+    %% 순철 상세
+    %% ═══════════════════════════════════
+    PURE --> PURE_D["α-Fe 페라이트 조직<br/>BCC 구조 · 연하고 전연성 우수<br/>전자기 코어 · 변압기 · 자성재료"]
+
+    %% ═══════════════════════════════════
+    %% 강 → 탄소강 vs 특수강
+    %% ═══════════════════════════════════
+    STEEL --> CARBON_STEEL["탄소강 Carbon Steel<br/>Fe + C 위주"]
+    STEEL --> SPECIAL["특수강 Special Steel<br/>합금원소 첨가"]
+
+    %% ── 탄소강: 탄소 함량별 ──
+    CARBON_STEEL --> LOW["저탄소강 Low Carbon<br/>0.02 ~ 0.25% C"]
+    CARBON_STEEL --> MED["중탄소강 Medium Carbon<br/>0.25 ~ 0.60% C"]
+    CARBON_STEEL --> HIGH["고탄소강 High Carbon<br/>0.60 ~ 2.11% C"]
+
+    LOW --> LOW_D["페라이트 + 소량 펄라이트<br/>용접성 우수 · 가공성 양호<br/>건축 구조재 · 배관 · 볼트 · 철근 · 자동차 차체"]
+    MED --> MED_D["펄라이트 + 페라이트 혼합<br/>열처리 가능 · 강도-인성 균형<br/>기어 · 축 · 레일 · 크랭크축 · 와이어로프"]
+    HIGH --> HIGH_D["펄라이트 + 시멘타이트 네트워크<br/>경도 높음 · 내마모성 우수<br/>스프링 · 공구 · 피아노선 · 면도칼 · 다이스"]
+
+    %% ── 공석점 기준 세분 ──
+    LOW --> HYPO_NOTE["아공석강 Hypoeutectoid<br/>C &lt; 0.77%"]
+    HIGH --> EU_NOTE["공석강 Eutectoid<br/>C = 0.77% — 100% 펄라이트"]
+    HIGH --> HYPER_NOTE["과공석강 Hypereutectoid<br/>0.77% &lt; C ≤ 2.11%"]
+
+    %% ── 특수강 분류 ──
+    SPECIAL --> ALLOY["합금강 Alloy Steel<br/>Cr · Ni · Mo · V · Mn 등 첨가"]
+    SPECIAL --> STAINLESS["스테인리스강 Stainless Steel<br/>Cr ≥ 10.5% — 부동태 피막"]
+    SPECIAL --> TOOL["공구강 Tool Steel<br/>W · Mo · V · Co — 고경도"]
+
+    ALLOY --> ALLOY_D["저합금강: 합금 &lt; 5% — 고장력 볼트 · 교량<br/>고합금강: 합금 ≥ 5% — 터빈 블레이드 · 금형"]
+
+    STAINLESS --> STS_D["오스테나이트계 304/316: Cr+Ni — 주방 · 의료<br/>페라이트계 430: Cr — 가전 · 배기계<br/>마르텐사이트계 410/440: Cr+C — 칼날 · 베어링<br/>듀플렉스계: Cr+Ni+Mo — 해양 · 화학플랜트"]
+
+    TOOL --> TOOL_D["냉간공구강 SKD11: Cr+Mo+V — 프레스 금형<br/>열간공구강 SKD61: Cr+Mo+V — 다이캐스팅<br/>고속도강 SKH51: W+Mo+V+Co — 드릴 · 엔드밀"]
+
+    %% ═══════════════════════════════════
+    %% 주철 → 탄소 함량별
+    %% ═══════════════════════════════════
+    CASTIRON --> HYPO_CI["아공정 주철<br/>2.11 ~ 4.3% C"]
+    CASTIRON --> EU_CI["공정 주철<br/>C = 4.3% — 레데부라이트"]
+    CASTIRON --> HYPER_CI["과공정 주철<br/>4.3 ~ 6.67% C"]
+
+    %% ── 조직별 세분 ──
+    CASTIRON --> CI_TYPES["조직별 분류"]
+
+    CI_TYPES --> GRAY["회주철 Gray CI<br/>편상 흑연 · 진동감쇠 우수<br/>엔진블록 · 브레이크 디스크 · 공작기계 베드"]
+    CI_TYPES --> DUCTILE["구상흑연주철 Ductile CI<br/>구형 흑연 · 강도+연성 겸비<br/>수도관 · 크랭크축 · 기어"]
+    CI_TYPES --> WHITE["백주철 White CI<br/>시멘타이트 조직 · 극경도<br/>분쇄기 라이너 · 내마모 부품"]
+    CI_TYPES --> MALLE["가단주철 Malleable CI<br/>열처리로 흑연화 · 가공성 개선<br/>배관 피팅 · 농기구 · 철도부품"]
+
+    %% ═══════════════════════════════════
+    %% 스타일
+    %% ═══════════════════════════════════
+    classDef root fill:#1a1a2e,stroke:#0d0d1a,color:#fff,font-weight:bold,font-size:14px
+    classDef phase fill:#C45B28,stroke:#a14520,color:#fff,font-weight:bold
+    classDef sub fill:#d97a50,stroke:#C45B28,color:#fff,font-weight:bold
+    classDef carbon fill:#b84a1c,stroke:#8c3610,color:#fff,font-weight:bold
+    classDef leaf fill:#fbe8de,stroke:#C45B28,color:#3a1a08,font-size:11px
+    classDef note fill:#fff3e0,stroke:#e6a23c,color:#5a3e10,font-size:11px,stroke-dasharray:5 5
+    classDef special fill:#2d6a4f,stroke:#1b4332,color:#fff,font-weight:bold
+    classDef specialSub fill:#40916c,stroke:#2d6a4f,color:#fff,font-weight:bold
+    classDef specialLeaf fill:#d8f3e6,stroke:#40916c,color:#1a3a2a,font-size:11px
+    classDef cast fill:#534AB7,stroke:#3c348a,color:#fff,font-weight:bold
+    classDef castSub fill:#7165c0,stroke:#534AB7,color:#fff,font-weight:bold
+    classDef castLeaf fill:#e8e5f5,stroke:#534AB7,color:#2a2560,font-size:11px
+    classDef castType fill:#9b93d7,stroke:#534AB7,color:#1a1a2e,font-weight:bold
+
+    class ROOT root
+    class PURE,STEEL,CASTIRON phase
+    class PURE_D leaf
+    class CARBON_STEEL,SPECIAL sub
+    class LOW,MED,HIGH carbon
+    class LOW_D,MED_D,HIGH_D leaf
+    class HYPO_NOTE,EU_NOTE,HYPER_NOTE note
+    class ALLOY,STAINLESS,TOOL specialSub
+    class ALLOY_D,STS_D,TOOL_D specialLeaf
+    class HYPO_CI,EU_CI,HYPER_CI castSub
+    class CI_TYPES castType
+    class GRAY,DUCTILE,WHITE,MALLE castLeaf

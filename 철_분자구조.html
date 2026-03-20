@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>철(Fe) 분자구조 비교 — 순철 · 연철 · 강철 · 주철</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: #12121a;
+    --border: #1e1e2e;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --fe: #C45B28;
+    --fe-light: #e8784a;
+    --carbon: #333340;
+    --carbon-light: #555568;
+    --slag: #6b5b3a;
+    --cementite: #4a6a8a;
+    --graphite: #2a2a3a;
+    --pearlite: #7a5a3a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .header {
+    text-align: center;
+    padding: 48px 24px 24px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--fe-light);
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 24px;
+    margin-bottom: 32px;
+  }
+  .tab-btn {
+    padding: 10px 24px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-dim);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 6px;
+  }
+  .tab-btn:hover { border-color: var(--fe); color: var(--text); }
+  .tab-btn.active {
+    background: var(--fe);
+    color: #fff;
+    border-color: var(--fe);
+  }
+
+  /* Main Content */
+  .content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .structure-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .card-header .symbol {
+    width: 56px; height: 56px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; font-weight: 500;
+    color: #fff;
+  }
+  .card-header .info h2 { font-size: 22px; font-weight: 700; }
+  .card-header .info .sub {
+    font-size: 13px; color: var(--text-dim); margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 480px;
+  }
+
+  .viz-area {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .viz-area canvas {
+    border-radius: 8px;
+  }
+  .viz-label {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .info-area {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  .info-section h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fe-light);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+  .info-section p, .info-section li {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .info-section ul {
+    list-style: none;
+    padding: 0;
+  }
+  .info-section li::before {
+    content: '·';
+    color: var(--fe);
+    font-weight: bold;
+    margin-right: 8px;
+  }
+
+  .prop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .prop-item {
+    background: rgba(196,91,40,0.06);
+    border: 1px solid rgba(196,91,40,0.12);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .prop-item .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .prop-item .value {
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 32px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+
+  /* Comparison Table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .compare-table th {
+    background: rgba(196,91,40,0.1);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--fe-light);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .compare-table tr:hover td {
+    background: rgba(196,91,40,0.04);
+  }
+  .carbon-bar {
+    height: 6px;
+    background: var(--carbon-light);
+    border-radius: 3px;
+    margin-top: 4px;
+  }
+  .carbon-bar-inner {
+    height: 100%;
+    background: var(--fe);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  @media (max-width: 768px) {
+    .card-body { grid-template-columns: 1fr; }
+    .viz-area { border-right: none; border-bottom: 1px solid var(--border); }
+    .tab-nav { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>철(Fe) 미세조직 · 분자구조 비교</h1>
+  <p>순철 · 연철 · 강철 · 주철 — 탄소 함량에 따른 결정구조와 미세조직 변화</p>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showPanel('pure')">순철 Pure Iron</button>
+  <button class="tab-btn" onclick="showPanel('wrought')">연철 Wrought Iron</button>
+  <button class="tab-btn" onclick="showPanel('steel')">강철 Steel</button>
+  <button class="tab-btn" onclick="showPanel('cast')">주철 Cast Iron</button>
+  <button class="tab-btn" onclick="showPanel('compare')">비교표</button>
+</div>
+
+<div class="content">
+
+  <!-- ===== 순철 ===== -->
+  <div id="panel-pure" class="panel active">
+    <div class="structure-card">
+      <div class="card-header">
+        <div class="symbol" style="background:linear-gradient(135deg,#C45B28,#e8784a)">Fe</div>
+        <div class="info">
+          <h2>순철 純鐵 — Pure Iron</h2>
+          <div class="sub">C &lt; 0.02% · BCC α-Ferrite</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="viz-area">
+          <canvas id="canvas-pure" width="400" height="400"></canvas>
+          <div class="viz-label">BCC (Body-Centered Cubic) 체심입방격자</div>
+        </div>
+        <div class="info-area">
+          <div class="info-section">
+            <h3>결정구조</h3>
+            <p>순철은 상온(α-Fe)에서 <strong>BCC(체심입방격자)</strong> 구조를 가집니다. 단위격자(unit cell)의 8개 꼭짓점과 1개 중심에 Fe 원자가 배치됩니다. 격자상수 a = 0.2866nm, 배위수 8, 충전율 68%입니다.</p>
+          </div>
+          <div class="info-section">
+            <h3>상변태</h3>
+            <ul>
+              <li>α-Fe (BCC) → 912°C → γ-Fe (FCC) → 1394°C → δ-Fe (BCC)</li>
+              <li>768°C 이하: 강자성(페라이트)</li>
+              <li>탄소 고용한도: α-Fe에서 최대 0.02%</li>
+            </ul>
+          </div>
+          <div class="prop-grid">
+            <div class="prop-item">
+              <div class="label">C content</div>
+              <div class="value">&lt; 0.02%</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">Crystal</div>
+              <div class="value">BCC</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">인장강도</div>
+              <div class="value">~250 MPa</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">경도</div>
+              <div class="value">~80 HB</div>
+            </div>
+          </div>
+          <div class="info-section">
+            <h3>특성</h3>
+            <p>극히 무르고 연성이 풍부합니다. 자기적 성질이 우수하여 변압기 코어, 전자석 등에 사용됩니다. 산업적으로 순수한 철을 얻기는 매우 어렵습니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#e8784a"></div>Fe 원자 (꼭짓점)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div>Fe 원자 (체심)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(196,91,40,0.15);border:1px solid rgba(196,91,40,0.4)"></div>단위격자 면</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 연철 ===== -->
+  <div id="panel-wrought" class="panel">
+    <div class="structure-card">
+      <div class="card-header">
+        <div class="symbol" style="background:linear-gradient(135deg,#6b5b3a,#9a8a5a)">Fe<sub>w</sub></div>
+        <div class="info">
+          <h2>연철 鍊鐵 — Wrought Iron</h2>
+          <div class="sub">C &lt; 0.08% · Ferrite + Slag Inclusions</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="viz-area">
+          <canvas id="canvas-wrought" width="400" height="400"></canvas>
+          <div class="viz-label">Ferrite 기지 + 섬유상 슬래그 개재물</div>
+        </div>
+        <div class="info-area">
+          <div class="info-section">
+            <h3>미세조직</h3>
+            <p>연철은 <strong>페라이트(α-Fe) 기지</strong> 속에 <strong>규산염 슬래그(silicate slag)</strong> 개재물이 섬유 형태로 분포된 복합 구조입니다. 슬래그는 주로 FeO·SiO₂(파야라이트)로 구성됩니다.</p>
+          </div>
+          <div class="info-section">
+            <h3>제조법</h3>
+            <ul>
+              <li>퍼들링(puddling) 공정: 수작업으로 교반</li>
+              <li>반복 단조·접힘으로 슬래그 분포 → 결이 생김</li>
+              <li>산업혁명 이전 주요 구조 재료</li>
+            </ul>
+          </div>
+          <div class="prop-grid">
+            <div class="prop-item">
+              <div class="label">C content</div>
+              <div class="value">&lt; 0.08%</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">기지조직</div>
+              <div class="value">Ferrite</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">인장강도</div>
+              <div class="value">~340 MPa</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">슬래그</div>
+              <div class="value">1~3%</div>
+            </div>
+          </div>
+          <div class="info-section">
+            <h3>특성</h3>
+            <p>나무결처럼 방향성이 있어 세로 방향 강도가 우수합니다. 내식성이 강철보다 양호하며, 용접·단조가 쉽습니다. 에펠탑의 원래 재료가 바로 연철(puddled iron)입니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#d4a574"></div>페라이트 결정립</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#6b5b3a"></div>슬래그 개재물 (FeO·SiO₂)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3a3a2a"></div>결정립계</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 강철 ===== -->
+  <div id="panel-steel" class="panel">
+    <div class="structure-card">
+      <div class="card-header">
+        <div class="symbol" style="background:linear-gradient(135deg,#2d6a4f,#40916c)">Fe-C</div>
+        <div class="info">
+          <h2>강철 鋼鐵 — Steel</h2>
+          <div class="sub">C 0.02~2.11% · Ferrite + Pearlite (+ Cementite)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="viz-area">
+          <canvas id="canvas-steel" width="400" height="400"></canvas>
+          <div class="viz-label">펄라이트 층상구조 (Ferrite + Cementite 교대 배열)</div>
+        </div>
+        <div class="info-area">
+          <div class="info-section">
+            <h3>미세조직</h3>
+            <p>강철의 핵심은 <strong>펄라이트(Pearlite)</strong>입니다. 727°C 공석반응에서 γ-Fe(오스테나이트)가 α-Fe(페라이트)와 Fe₃C(시멘타이트)의 <strong>층상구조(lamellar)</strong>로 분해됩니다. 밝은 층이 페라이트, 어두운 층이 시멘타이트입니다.</p>
+          </div>
+          <div class="info-section">
+            <h3>탄소 함량별 조직</h3>
+            <ul>
+              <li><strong>아공석강</strong> (C &lt; 0.77%): 초석 페라이트 + 펄라이트</li>
+              <li><strong>공석강</strong> (C = 0.77%): 100% 펄라이트</li>
+              <li><strong>과공석강</strong> (C &gt; 0.77%): 펄라이트 + 초석 시멘타이트</li>
+            </ul>
+          </div>
+          <div class="prop-grid">
+            <div class="prop-item">
+              <div class="label">C content</div>
+              <div class="value">0.02~2.11%</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">핵심조직</div>
+              <div class="value">Pearlite</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">인장강도</div>
+              <div class="value">400~1500 MPa</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">경도</div>
+              <div class="value">120~800 HB</div>
+            </div>
+          </div>
+          <div class="info-section">
+            <h3>Fe₃C 시멘타이트</h3>
+            <p>탄소 원자 1개가 Fe 원자 3개와 결합한 간충 화합물(interstitial compound)입니다. 사방정계(orthorhombic) 결정, 매우 경질(~800HV)이나 취성이 큽니다. 강철의 강도를 담당하는 핵심 상(phase)입니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#d4a574"></div>페라이트 (α-Fe, BCC)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4a6a8a"></div>시멘타이트 (Fe₃C)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:repeating-linear-gradient(0deg,#d4a574 0 2px,#4a6a8a 2px 4px)"></div>펄라이트 (층상)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 주철 ===== -->
+  <div id="panel-cast" class="panel">
+    <div class="structure-card">
+      <div class="card-header">
+        <div class="symbol" style="background:linear-gradient(135deg,#534AB7,#7a6de0)">Fe-C</div>
+        <div class="info">
+          <h2>주철 鑄鐵 — Cast Iron</h2>
+          <div class="sub">C 2.11~6.67% · Pearlite/Ferrite + Graphite/Cementite</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="viz-area">
+          <canvas id="canvas-cast" width="400" height="400"></canvas>
+          <div class="viz-label">회주철: 편상흑연 / 구상흑연주철: 구상흑연</div>
+        </div>
+        <div class="info-area">
+          <div class="info-section">
+            <h3>미세조직</h3>
+            <p>주철에서 탄소는 두 가지 형태로 존재합니다: <strong>흑연(Graphite)</strong> 또는 <strong>시멘타이트(Fe₃C)</strong>. 냉각 속도와 Si 함량에 따라 흑연의 형상이 결정됩니다.</p>
+          </div>
+          <div class="info-section">
+            <h3>주철의 종류</h3>
+            <ul>
+              <li><strong>회주철(Gray)</strong>: 편상흑연(flake graphite) — 진동 흡수 우수</li>
+              <li><strong>구상흑연주철(Ductile)</strong>: Mg 첨가 → 구형 흑연 — 연성 확보</li>
+              <li><strong>백주철(White)</strong>: 전체 시멘타이트 — 극경질·극취성</li>
+              <li><strong>가단주철(Malleable)</strong>: 백주철 열처리 → 단괴상 흑연</li>
+            </ul>
+          </div>
+          <div class="prop-grid">
+            <div class="prop-item">
+              <div class="label">C content</div>
+              <div class="value">2.11~4.5%</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">Si content</div>
+              <div class="value">1~3%</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">인장강도</div>
+              <div class="value">150~800 MPa</div>
+            </div>
+            <div class="prop-item">
+              <div class="label">공정점</div>
+              <div class="value">4.3% C</div>
+            </div>
+          </div>
+          <div class="info-section">
+            <h3>흑연의 역할</h3>
+            <p>흑연은 육방정계(HCP) 결정으로, 층간 반데르발스 결합이 약해 윤활 효과를 줍니다. 편상흑연은 균열의 시작점이 되어 취성을 유발하지만, 구상으로 만들면 응력 집중을 완화하여 강철에 가까운 기계적 성질을 얻습니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#d4a574"></div>페라이트 기지</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2a2a3a"></div>흑연 (Graphite, C)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4a6a8a"></div>시멘타이트 (Fe₃C)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:repeating-linear-gradient(0deg,#d4a574 0 2px,#4a6a8a 2px 4px)"></div>펄라이트</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 비교표 ===== -->
+  <div id="panel-compare" class="panel">
+    <div class="structure-card">
+      <div class="card-header">
+        <div class="symbol" style="background:linear-gradient(135deg,#444,#666)">⚖</div>
+        <div class="info">
+          <h2>비교표 — 4종 철 재료</h2>
+          <div class="sub">Crystal Structure · Microstructure · Properties</div>
+        </div>
+      </div>
+      <div style="padding:24px 32px; overflow-x:auto;">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>순철 Pure Iron</th>
+              <th>연철 Wrought Iron</th>
+              <th>강철 Steel</th>
+              <th>주철 Cast Iron</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>탄소 함량</strong></td>
+              <td>&lt; 0.02%<div class="carbon-bar"><div class="carbon-bar-inner" style="width:1%"></div></div></td>
+              <td>&lt; 0.08%<div class="carbon-bar"><div class="carbon-bar-inner" style="width:3%"></div></div></td>
+              <td>0.02~2.11%<div class="carbon-bar"><div class="carbon-bar-inner" style="width:32%"></div></div></td>
+              <td>2.11~6.67%<div class="carbon-bar"><div class="carbon-bar-inner" style="width:100%"></div></div></td>
+            </tr>
+            <tr>
+              <td><strong>결정구조</strong></td>
+              <td>BCC (α-Fe)</td>
+              <td>BCC (α-Fe)</td>
+              <td>BCC + Ortho.</td>
+              <td>BCC + HCP</td>
+            </tr>
+            <tr>
+              <td><strong>주요 상(Phase)</strong></td>
+              <td>페라이트</td>
+              <td>페라이트 + 슬래그</td>
+              <td>페라이트 + 펄라이트<br>+ 시멘타이트</td>
+              <td>페라이트/펄라이트<br>+ 흑연/시멘타이트</td>
+            </tr>
+            <tr>
+              <td><strong>인장강도</strong></td>
+              <td>~250 MPa</td>
+              <td>~340 MPa</td>
+              <td>400~1500 MPa</td>
+              <td>150~800 MPa</td>
+            </tr>
+            <tr>
+              <td><strong>경도</strong></td>
+              <td>~80 HB</td>
+              <td>~100 HB</td>
+              <td>120~800 HB</td>
+              <td>150~600 HB</td>
+            </tr>
+            <tr>
+              <td><strong>연성/취성</strong></td>
+              <td>매우 연함</td>
+              <td>연함 (방향성)</td>
+              <td>조절 가능</td>
+              <td>취성 (회주철)<br>연성 (구상)</td>
+            </tr>
+            <tr>
+              <td><strong>용접성</strong></td>
+              <td>우수</td>
+              <td>우수 (단접)</td>
+              <td>양호~우수</td>
+              <td>불량</td>
+            </tr>
+            <tr>
+              <td><strong>주조성</strong></td>
+              <td>불량</td>
+              <td>불량</td>
+              <td>보통</td>
+              <td>우수</td>
+            </tr>
+            <tr>
+              <td><strong>대표 용도</strong></td>
+              <td>변압기 코어<br>전자석</td>
+              <td>에펠탑, 난간<br>장식 철물</td>
+              <td>건축 구조재<br>자동차, 기계</td>
+              <td>엔진 블록<br>맨홀 뚜껑, 파이프</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:16px 32px;">
+        <canvas id="canvas-phase" width="1036" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// === Tab Navigation ===
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+  // Redraw canvases when shown
+  requestAnimationFrame(() => {
+    if (id === 'pure') drawPureIron();
+    if (id === 'wrought') drawWroughtIron();
+    if (id === 'steel') drawSteel();
+    if (id === 'cast') drawCastIron();
+    if (id === 'compare') drawPhaseBar();
+  });
+}
+
+// === Color palette ===
+const C = {
+  fe: '#e8784a', feCenter: '#ffd700', feDim: '#c45b28',
+  bond: 'rgba(232,120,74,0.3)', face: 'rgba(196,91,40,0.08)',
+  ferrite: '#d4a574', ferriteLight: '#e8c8a0',
+  slag: '#6b5b3a', slagLight: '#9a8a5a',
+  cementite: '#4a6a8a', cementiteLight: '#6a9aba',
+  graphite: '#2a2a3a', graphiteLight: '#444458',
+  pearliteFe: '#d4a574', pearliteC: '#4a6a8a',
+  grain: '#3a3020', grainLight: '#5a5040',
+  bg: '#0e0e16',
+};
+
+// ===========================
+// 1. 순철: BCC 단위격자 3D
+// ===========================
+function drawPureIron() {
+  const canvas = document.getElementById('canvas-pure');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // 3D projection params
+  const cx = w/2, cy = h/2;
+  const size = 120;
+  const angleX = 0.45, angleY = 0.65;
+
+  function project(x, y, z) {
+    // Rotate Y
+    const x1 = x * Math.cos(angleY) - z * Math.sin(angleY);
+    const z1 = x * Math.sin(angleY) + z * Math.cos(angleY);
+    // Rotate X
+    const y1 = y * Math.cos(angleX) - z1 * Math.sin(angleX);
+    const z2 = y * Math.sin(angleX) + z1 * Math.cos(angleX);
+    const scale = 600 / (600 + z2);
+    return { x: cx + x1 * scale, y: cy + y1 * scale, z: z2, s: scale };
+  }
+
+  // BCC corners
+  const corners = [];
+  for (let i = 0; i < 8; i++) {
+    corners.push({
+      x: (i & 1 ? 1 : -1) * size,
+      y: (i & 2 ? 1 : -1) * size,
+      z: (i & 4 ? 1 : -1) * size
+    });
+  }
+  const center = { x: 0, y: 0, z: 0 };
+
+  // Draw faces (back faces first)
+  const faces = [
+    [0,2,6,4], [1,3,7,5], [0,1,3,2], [4,5,7,6], [0,1,5,4], [2,3,7,6]
+  ];
+  const projected = corners.map(c => project(c.x, c.y, c.z));
+  const projCenter = project(0, 0, 0);
+
+  // Sort faces by average z
+  const facesWithZ = faces.map(f => {
+    const avgZ = f.reduce((s, i) => s + projected[i].z, 0) / 4;
+    return { indices: f, z: avgZ };
+  });
+  facesWithZ.sort((a, b) => b.z - a.z);
+
+  facesWithZ.forEach(face => {
+    ctx.beginPath();
+    face.indices.forEach((idx, i) => {
+      const p = projected[idx];
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = C.face;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(196,91,40,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Draw edges
+  const edges = [
+    [0,1],[2,3],[4,5],[6,7],
+    [0,2],[1,3],[4,6],[5,7],
+    [0,4],[1,5],[2,6],[3,7]
+  ];
+  edges.forEach(([a,b]) => {
+    ctx.beginPath();
+    ctx.moveTo(projected[a].x, projected[a].y);
+    ctx.lineTo(projected[b].x, projected[b].y);
+    ctx.strokeStyle = C.bond;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // Draw bonds to center
+  corners.forEach((_, i) => {
+    ctx.beginPath();
+    ctx.moveTo(projected[i].x, projected[i].y);
+    ctx.lineTo(projCenter.x, projCenter.y);
+    ctx.strokeStyle = 'rgba(255,215,0,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Draw atoms (sorted by z for depth)
+  const allAtoms = [
+    ...corners.map((c, i) => ({ ...projected[i], type: 'corner' })),
+    { ...projCenter, type: 'center' }
+  ];
+  allAtoms.sort((a, b) => b.z - a.z);
+
+  allAtoms.forEach(atom => {
+    const r = atom.type === 'center' ? 18 * atom.s : 14 * atom.s;
+    const color = atom.type === 'center' ? C.feCenter : C.fe;
+
+    // Glow
+    const glow = ctx.createRadialGradient(atom.x, atom.y, 0, atom.x, atom.y, r * 2);
+    glow.addColorStop(0, atom.type === 'center' ? 'rgba(255,215,0,0.3)' : 'rgba(232,120,74,0.2)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.fillRect(atom.x - r*2, atom.y - r*2, r*4, r*4);
+
+    // Sphere
+    const grad = ctx.createRadialGradient(atom.x - r*0.3, atom.y - r*0.3, 0, atom.x, atom.y, r);
+    grad.addColorStop(0, '#fff');
+    grad.addColorStop(0.3, color);
+    grad.addColorStop(1, atom.type === 'center' ? '#a08000' : C.feDim);
+    ctx.beginPath();
+    ctx.arc(atom.x, atom.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  });
+
+  // Labels
+  ctx.font = '500 12px JetBrains Mono';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'center';
+  ctx.fillText('a = 0.2866 nm', cx, h - 30);
+
+  // Lattice constant arrow
+  const p0 = projected[0], p1 = projected[1];
+  ctx.beginPath();
+  ctx.moveTo(p0.x, p0.y + 28);
+  ctx.lineTo(p1.x, p1.y + 28);
+  ctx.strokeStyle = 'rgba(136,136,160,0.5)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+// ===========================
+// 2. 연철: 페라이트 + 슬래그
+// ===========================
+function drawWroughtIron() {
+  const canvas = document.getElementById('canvas-wrought');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Seed random
+  const seed = 42;
+  let rng = seed;
+  function rand() { rng = (rng * 16807 + 0) % 2147483647; return rng / 2147483647; }
+
+  // Draw ferrite grains (Voronoi-like)
+  const grainCenters = [];
+  for (let i = 0; i < 25; i++) {
+    grainCenters.push({ x: 30 + rand() * (w - 60), y: 30 + rand() * (h - 60) });
+  }
+
+  // Simple Voronoi coloring
+  const colors = [
+    '#d4a574', '#c89a68', '#dbb58a', '#c4956a', '#d0a070',
+    '#ddb888', '#c89060', '#d8b080', '#cda478', '#d4a068'
+  ];
+  for (let px = 0; px < w; px += 3) {
+    for (let py = 0; py < h; py += 3) {
+      let minD = Infinity, minI = 0;
+      grainCenters.forEach((g, i) => {
+        const d = (px - g.x) ** 2 + (py - g.y) ** 2;
+        if (d < minD) { minD = d; minI = i; }
+      });
+      ctx.fillStyle = colors[minI % colors.length];
+      ctx.fillRect(px, py, 3, 3);
+    }
+  }
+
+  // Grain boundaries
+  for (let px = 0; px < w; px += 2) {
+    for (let py = 0; py < h; py += 2) {
+      let minD = Infinity, minD2 = Infinity;
+      grainCenters.forEach(g => {
+        const d = Math.sqrt((px - g.x) ** 2 + (py - g.y) ** 2);
+        if (d < minD) { minD2 = minD; minD = d; }
+        else if (d < minD2) { minD2 = d; }
+      });
+      if (minD2 - minD < 3) {
+        ctx.fillStyle = C.grain;
+        ctx.fillRect(px, py, 2, 2);
+      }
+    }
+  }
+
+  // Slag fibers (horizontal fibrous inclusions)
+  rng = 123;
+  for (let i = 0; i < 18; i++) {
+    const y = 20 + rand() * (h - 40);
+    const x = rand() * w * 0.3;
+    const len = 60 + rand() * 200;
+    const thickness = 2 + rand() * 4;
+    const waveAmp = 2 + rand() * 5;
+    const waveFreq = 0.02 + rand() * 0.04;
+
+    ctx.beginPath();
+    for (let t = 0; t < len; t += 1) {
+      const px = x + t;
+      const py = y + Math.sin(t * waveFreq + i) * waveAmp;
+      if (t === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = C.slag;
+    ctx.lineWidth = thickness;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = 0.7;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Lighter core
+    ctx.beginPath();
+    for (let t = 0; t < len; t += 1) {
+      const px = x + t;
+      const py = y + Math.sin(t * waveFreq + i) * waveAmp;
+      if (t === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = C.slagLight;
+    ctx.lineWidth = thickness * 0.4;
+    ctx.globalAlpha = 0.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Label
+  ctx.font = '500 11px JetBrains Mono';
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.textAlign = 'left';
+  ctx.fillText('← 단조 방향 (fibrous direction)', 10, h - 12);
+}
+
+// ===========================
+// 3. 강철: 펄라이트 층상구조
+// ===========================
+function drawSteel() {
+  const canvas = document.getElementById('canvas-steel');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Background: ferrite grains with pearlite colonies
+  const seed = 77;
+  let rng = seed;
+  function rand() { rng = (rng * 16807 + 0) % 2147483647; return rng / 2147483647; }
+
+  // Draw pearlite colonies (different orientations)
+  const colonies = [];
+  for (let i = 0; i < 12; i++) {
+    colonies.push({
+      cx: 40 + rand() * (w - 80),
+      cy: 40 + rand() * (h - 80),
+      r: 40 + rand() * 60,
+      angle: rand() * Math.PI,
+      spacing: 4 + rand() * 5,
+      type: rand() > 0.3 ? 'pearlite' : 'ferrite'
+    });
+  }
+
+  // First pass: fill background with ferrite
+  ctx.fillStyle = '#d4a574';
+  ctx.fillRect(0, 0, w, h);
+
+  // Voronoi-style grain regions
+  const grainPts = colonies.map(c => ({ x: c.cx, y: c.cy }));
+  // Add extra ferrite grains
+  for (let i = 0; i < 8; i++) {
+    grainPts.push({ x: rand() * w, y: rand() * h });
+  }
+
+  // Grain boundary detection and drawing
+  for (let px = 0; px < w; px += 2) {
+    for (let py = 0; py < h; py += 2) {
+      let minD = Infinity, minD2 = Infinity, minI = 0;
+      grainPts.forEach((g, i) => {
+        const d = Math.sqrt((px - g.x) ** 2 + (py - g.y) ** 2);
+        if (d < minD) { minD2 = minD; minD = d; minI = i; }
+        else if (d < minD2) { minD2 = d; }
+      });
+      // Color grain
+      if (minI < colonies.length && colonies[minI].type === 'pearlite') {
+        const col = colonies[minI];
+        const local = Math.sin(
+          (px * Math.cos(col.angle) + py * Math.sin(col.angle)) / col.spacing * Math.PI
+        );
+        ctx.fillStyle = local > 0 ? C.pearliteFe : C.pearliteC;
+        ctx.fillRect(px, py, 2, 2);
+      } else {
+        // Ferrite - slight color variation
+        const v = (minI * 17) % 3;
+        ctx.fillStyle = ['#d4a574', '#dbb58a', '#c89a68'][v];
+        ctx.fillRect(px, py, 2, 2);
+      }
+      // Grain boundary
+      if (minD2 - minD < 2.5) {
+        ctx.fillStyle = '#2a2018';
+        ctx.fillRect(px, py, 2, 2);
+      }
+    }
+  }
+
+  // Zoom inset: pearlite lamellar detail
+  const insetX = w - 160, insetY = 10, insetW = 150, insetH = 150;
+  ctx.save();
+  ctx.strokeStyle = C.fe;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(insetX, insetY, insetW, insetH);
+
+  ctx.fillStyle = '#0e0e16';
+  ctx.fillRect(insetX, insetY, insetW, insetH);
+
+  ctx.clip();
+  // Draw lamellar structure zoomed
+  const spacing = 6;
+  for (let y = insetY; y < insetY + insetH; y += spacing) {
+    // Ferrite layer
+    ctx.fillStyle = C.pearliteFe;
+    ctx.fillRect(insetX, y, insetW, spacing * 0.65);
+    // Cementite layer
+    ctx.fillStyle = C.pearliteC;
+    ctx.fillRect(insetX, y + spacing * 0.65, insetW, spacing * 0.35);
+  }
+  ctx.restore();
+
+  // Inset labels
+  ctx.font = '500 10px JetBrains Mono';
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.fillText('Pearlite 확대', insetX + insetW/2, insetY + insetH + 16);
+
+  // Arrow labels for inset layers
+  ctx.font = '9px JetBrains Mono';
+  ctx.fillStyle = C.pearliteFe;
+  ctx.textAlign = 'left';
+  ctx.fillText('α-Fe', insetX + 4, insetY + 20);
+  ctx.fillStyle = C.cementiteLight;
+  ctx.fillText('Fe₃C', insetX + 4, insetY + 40);
+
+  // Labels
+  ctx.font = '11px JetBrains Mono';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.textAlign = 'left';
+  ctx.fillText('아공석강 (C≈0.45%) 미세조직', 10, h - 12);
+}
+
+// ===========================
+// 4. 주철: 편상흑연 + 구상흑연
+// ===========================
+function drawCastIron() {
+  const canvas = document.getElementById('canvas-cast');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const half = w / 2;
+
+  // Left half: Gray cast iron (flake graphite)
+  // Right half: Ductile cast iron (nodular graphite)
+
+  const seed = 55;
+  let rng = seed;
+  function rand() { rng = (rng * 16807 + 0) % 2147483647; return rng / 2147483647; }
+
+  // Pearlite/ferrite matrix for both halves
+  function drawMatrix(startX, endX) {
+    for (let px = startX; px < endX; px += 3) {
+      for (let py = 0; py < h; py += 3) {
+        // Pearlite-dominant matrix with some ferrite
+        const noise = Math.sin(px * 0.15) * Math.cos(py * 0.12);
+        ctx.fillStyle = noise > 0.3 ? '#c89a68' : (noise > -0.2 ? '#b08858' : '#a07848');
+        ctx.fillRect(px, py, 3, 3);
+      }
+    }
+  }
+
+  // Left: Gray (flake graphite)
+  drawMatrix(0, half);
+
+  rng = 200;
+  // Flake graphite
+  for (let i = 0; i < 40; i++) {
+    const cx = 30 + rand() * (half - 60);
+    const cy = 30 + rand() * (h - 60);
+    const angle = rand() * Math.PI;
+    const len = 15 + rand() * 50;
+    const branches = 2 + Math.floor(rand() * 4);
+
+    for (let b = 0; b < branches; b++) {
+      const bAngle = angle + (b / branches) * Math.PI * 0.8 - 0.4 * Math.PI;
+      const bLen = len * (0.5 + rand() * 0.5);
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      // Jagged flake
+      let px = cx, py = cy;
+      for (let t = 0; t < bLen; t += 3) {
+        px += Math.cos(bAngle) * 3 + (rand() - 0.5) * 2;
+        py += Math.sin(bAngle) * 3 + (rand() - 0.5) * 2;
+        ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = C.graphite;
+      ctx.lineWidth = 1.5 + rand() * 2;
+      ctx.stroke();
+
+      // Lighter edge
+      ctx.strokeStyle = C.graphiteLight;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+  }
+
+  // Right: Ductile (nodular graphite)
+  drawMatrix(half, w);
+
+  rng = 300;
+  for (let i = 0; i < 25; i++) {
+    const cx = half + 30 + rand() * (half - 60);
+    const cy = 30 + rand() * (h - 60);
+    const r = 8 + rand() * 16;
+
+    // Ferrite halo (bull's-eye)
+    const haloGrad = ctx.createRadialGradient(cx, cy, r, cx, cy, r * 2.2);
+    haloGrad.addColorStop(0, '#dbb58a');
+    haloGrad.addColorStop(0.7, '#d4a574');
+    haloGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = haloGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Graphite nodule
+    const grad = ctx.createRadialGradient(cx - r*0.2, cy - r*0.2, 0, cx, cy, r);
+    grad.addColorStop(0, '#555568');
+    grad.addColorStop(0.5, C.graphite);
+    grad.addColorStop(1, '#1a1a28');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  // Divider
+  ctx.beginPath();
+  ctx.moveTo(half, 0);
+  ctx.lineTo(half, h);
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.font = 'bold 13px Noto Sans KR';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillText('회주철 (Gray)', half/2, 24);
+  ctx.fillText('구상흑연주철 (Ductile)', half + half/2, 24);
+
+  ctx.font = '11px JetBrains Mono';
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.fillText('편상흑연 (Flake)', half/2, h - 12);
+  ctx.fillText('구상흑연 (Nodular)', half + half/2, h - 12);
+}
+
+// ===========================
+// 5. 비교표 하단: Phase bar
+// ===========================
+function drawPhaseBar() {
+  const canvas = document.getElementById('canvas-phase');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const barY = 50, barH = 40;
+  const maxC = 6.67;
+
+  // Carbon percentage scale
+  const markers = [0, 0.02, 0.08, 0.77, 2.11, 4.3, 6.67];
+  const labels = ['0%', '0.02%', '0.08%', '0.77%', '2.11%', '4.3%', '6.67%'];
+
+  // Regions
+  const regions = [
+    { start: 0, end: 0.02, label: '순철', color: '#e8784a' },
+    { start: 0.02, end: 0.77, label: '아공석강', color: '#40916c' },
+    { start: 0.77, end: 2.11, label: '과공석강', color: '#2d6a4f' },
+    { start: 2.11, end: 4.3, label: '아공정 주철', color: '#7a6de0' },
+    { start: 4.3, end: 6.67, label: '과공정 주철', color: '#534AB7' },
+  ];
+
+  function xPos(c) { return 40 + (c / maxC) * (w - 80); }
+
+  // Draw regions
+  regions.forEach(r => {
+    const x1 = xPos(r.start), x2 = xPos(r.end);
+    ctx.fillStyle = r.color;
+    ctx.globalAlpha = 0.6;
+    ctx.fillRect(x1, barY, x2 - x1, barH);
+    ctx.globalAlpha = 1;
+
+    // Label
+    ctx.font = '11px Noto Sans KR';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(r.label, (x1 + x2) / 2, barY + barH / 2 + 4);
+  });
+
+  // Border
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(xPos(0), barY, xPos(maxC) - xPos(0), barH);
+
+  // Markers
+  ctx.font = '10px JetBrains Mono';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'center';
+  markers.forEach((m, i) => {
+    const x = xPos(m);
+    ctx.beginPath();
+    ctx.moveTo(x, barY + barH);
+    ctx.lineTo(x, barY + barH + 8);
+    ctx.strokeStyle = '#666';
+    ctx.stroke();
+    ctx.fillText(labels[i], x, barY + barH + 20);
+  });
+
+  // Title
+  ctx.font = '500 12px JetBrains Mono';
+  ctx.fillStyle = '#aaa';
+  ctx.textAlign = 'center';
+  ctx.fillText('Fe-C 상태도 탄소 함량 범위', w / 2, 25);
+
+  // Wrought iron marker
+  const wx = xPos(0.05);
+  ctx.beginPath();
+  ctx.moveTo(wx, barY - 5);
+  ctx.lineTo(wx - 4, barY - 14);
+  ctx.lineTo(wx + 4, barY - 14);
+  ctx.closePath();
+  ctx.fillStyle = C.slag;
+  ctx.fill();
+  ctx.font = '10px Noto Sans KR';
+  ctx.fillStyle = C.slagLight;
+  ctx.textAlign = 'center';
+  ctx.fillText('연철', wx, barY - 18);
+
+  // Eutectoid
+  const ex = xPos(0.77);
+  ctx.beginPath();
+  ctx.moveTo(ex, barY - 5);
+  ctx.lineTo(ex - 4, barY - 14);
+  ctx.lineTo(ex + 4, barY - 14);
+  ctx.closePath();
+  ctx.fillStyle = '#e8784a';
+  ctx.fill();
+  ctx.fillStyle = '#e8784a';
+  ctx.fillText('공석점', ex, barY - 18);
+
+  // Eutectic
+  const eut = xPos(4.3);
+  ctx.beginPath();
+  ctx.moveTo(eut, barY - 5);
+  ctx.lineTo(eut - 4, barY - 14);
+  ctx.lineTo(eut + 4, barY - 14);
+  ctx.closePath();
+  ctx.fillStyle = '#7a6de0';
+  ctx.fill();
+  ctx.fillStyle = '#7a6de0';
+  ctx.fillText('공정점', eut, barY - 18);
+
+  // Phase labels at bottom
+  ctx.font = '10px JetBrains Mono';
+  ctx.fillStyle = '#666';
+  ctx.textAlign = 'left';
+  ctx.fillText('← C% →', w - 70, barY + barH + 20);
+}
+
+// Initial draw
+drawPureIron();
+</script>
+
+</body>
+</html>

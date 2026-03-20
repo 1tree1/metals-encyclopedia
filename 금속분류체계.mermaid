@@ -1,0 +1,81 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#2d3436', 'primaryTextColor': '#fff', 'primaryBorderColor': '#636e72', 'lineColor': '#636e72', 'secondaryColor': '#dfe6e9', 'tertiaryColor': '#f5f6fa'}, 'flowchart': {'nodeSpacing': 20, 'rankSpacing': 50}}}%%
+
+graph TB
+    ROOT["🔩 금속 백과사전<br/>Metal Classification"]
+
+    ROOT --> FERROUS["🔨 철금속<br/>Ferrous"]
+    ROOT --> NONFERROUS["⚙️ 비철금속<br/>Non-Ferrous"]
+    ROOT --> RARE["💎 희유금속/전략금속<br/>Rare & Strategic"]
+    ROOT --> REE["🌍 희토류<br/>REE"]
+    ROOT --> METALLOID["🔬 준금속<br/>Metalloid"]
+
+    %% ══════════════════════════════════
+    %% 철금속 → 하위 금속 (한 줄 압축)
+    %% ══════════════════════════════════
+    FERROUS --> F_GROUP["Fe 순철 · Fe+C 탄소강 · Fe合 합금강<br/>STS 스테인리스강 · FC 주철 · SKD 공구강"]
+
+    %% ══════════════════════════════════
+    %% 비철금속 → 3개 하위 카테고리
+    %% ══════════════════════════════════
+    NONFERROUS --> HEAVY["🏋️ 중금속<br/>Heavy"]
+    NONFERROUS --> LIGHT["🪶 경금속<br/>Light"]
+    NONFERROUS --> PRECIOUS["👑 귀금속<br/>Precious"]
+
+    HEAVY --> H_GROUP["Cu 구리 · Zn 아연 · Pb 납<br/>Sn 주석 · Ni 니켈 · Co 코발트"]
+    LIGHT --> L_GROUP["Al 알루미늄 · Mg 마그네슘<br/>Ti 티타늄 · Be 베릴륨"]
+    PRECIOUS --> P_GROUP["Au 금 · Ag 은 · Pt 백금<br/>Pd 팔라듐 · Rh 로듐"]
+
+    %% ══════════════════════════════════
+    %% 희유금속/전략금속 → 하위 금속
+    %% ══════════════════════════════════
+    RARE --> R_GROUP["Li 리튬 · Ga 갈륨 · In 인듐 · Ge 게르마늄 · W 텅스텐<br/>Mo 몰리브덴 · Ta 탄탈륨 · Mn 망간 · Nb 니오븀 · V 바나듐"]
+
+    %% ══════════════════════════════════
+    %% 희토류 → 하위 금속
+    %% ══════════════════════════════════
+    REE --> RE_GROUP["Nd 네오디뮴 · Dy 디스프로슘<br/>Ce 세륨 · La 란타넘 · Pr 프라세오디뮴"]
+
+    %% ══════════════════════════════════
+    %% 준금속 → 하위 금속
+    %% ══════════════════════════════════
+    METALLOID --> M_GROUP["Si 규소"]
+
+    %% ══════════════════════════════════
+    %% 스타일 정의
+    %% ══════════════════════════════════
+    classDef root fill:#1a1a2e,stroke:#16213e,color:#fff,font-weight:bold,font-size:15px
+    classDef ferrous fill:#C45B28,stroke:#a14520,color:#fff,font-weight:bold
+    classDef nonferrous fill:#2d6a4f,stroke:#1b4332,color:#fff,font-weight:bold
+    classDef heavy fill:#3a7d61,stroke:#2d6a4f,color:#fff,font-weight:bold
+    classDef light fill:#52b788,stroke:#2d6a4f,color:#1a1a2e,font-weight:bold
+    classDef precious fill:#EF9F27,stroke:#c7850e,color:#1a1a2e,font-weight:bold
+    classDef rare fill:#534AB7,stroke:#3c348a,color:#fff,font-weight:bold
+    classDef ree fill:#1A8A7A,stroke:#126b5e,color:#fff,font-weight:bold
+    classDef metalloid fill:#888780,stroke:#6b6a63,color:#fff,font-weight:bold
+
+    classDef ferrousLeaf fill:#f5ddd0,stroke:#C45B28,color:#4a2010,font-size:12px
+    classDef heavyLeaf fill:#d4eddf,stroke:#3a7d61,color:#1a3a2a,font-size:12px
+    classDef lightLeaf fill:#e0f2e8,stroke:#52b788,color:#1a3a2a,font-size:12px
+    classDef preciousLeaf fill:#fef0cc,stroke:#EF9F27,color:#5a3e00,font-size:12px
+    classDef rareLeaf fill:#e2dff2,stroke:#534AB7,color:#2a2560,font-size:12px
+    classDef reeLeaf fill:#cce8e4,stroke:#1A8A7A,color:#0d4a42,font-size:12px
+    classDef metalloidLeaf fill:#e8e8e5,stroke:#888780,color:#3a3a36,font-size:12px
+
+    %% 적용
+    class ROOT root
+    class FERROUS ferrous
+    class NONFERROUS nonferrous
+    class HEAVY heavy
+    class LIGHT light
+    class PRECIOUS precious
+    class RARE rare
+    class REE ree
+    class METALLOID metalloid
+
+    class F_GROUP ferrousLeaf
+    class H_GROUP heavyLeaf
+    class L_GROUP lightLeaf
+    class P_GROUP preciousLeaf
+    class R_GROUP rareLeaf
+    class RE_GROUP reeLeaf
+    class M_GROUP metalloidLeaf
