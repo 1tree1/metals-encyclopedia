@@ -702,10 +702,14 @@
                 id: 'fe', name: '순철', nameEn: 'Pure Iron', symbol: 'Fe', category: 'ferrous',
                 ore: {name: '적철석/자철석', type: '산화광물'},
                 locations: [
-                    {name: 'Pilbara (Mount Tom Price)', country: '호주', lat: -22.76, lng: 117.77, pct: 37, type: 'mine'},
-                    {name: 'Carajás Mine', country: '브라질', lat: -6.07, lng: -50.17, pct: 17, type: 'mine'},
-                    {name: '안산제철소', country: '중국', lat: 41.12, lng: 122.99, pct: 14, type: 'smelter'},
-                    {name: 'Kiruna Mine', country: '스웨덴', lat: 67.86, lng: 20.22, pct: 6, type: 'mine'},
+                    {name: 'Pilbara - Whaleback Mine', country: '호주', lat: -23.37, lng: 119.67, pct: 37, type: 'mine'},
+                    {name: 'Carajás Mine (Serra Norte)', country: '브라질', lat: -6.07, lng: -50.17, pct: 17, type: 'mine'},
+                    {name: 'Kiruna Iron Mine (LKAB)', country: '스웨덴', lat: 67.86, lng: 20.22, pct: 6, type: 'mine'},
+                    {name: 'Kryvyi Rih 철광산', country: '우크라이나', lat: 47.91, lng: 33.35, pct: 4, type: 'mine'},
+                    {name: 'Magnitogorsk 제철소 (MMK)', country: '러시아', lat: 53.39, lng: 59.04, pct: 5, type: 'smelter'},
+                    {name: 'Azovstal 제철소 (마리우폴)', country: '우크라이나', lat: 47.10, lng: 37.62, pct: 3, type: 'smelter'},
+                    {name: 'Port Talbot 제철소 (Tata)', country: '영국 웨일스', lat: 51.59, lng: -3.77, pct: 2, type: 'smelter'},
+                    {name: 'Shagang 제철소 (장자강)', country: '중국', lat: 31.87, lng: 120.56, pct: 14, type: 'smelter'},
                     {name: 'Lebedinsky GOK', country: '러시아', lat: 51.34, lng: 37.56, pct: 5, type: 'mine'}
                 ],
                 properties: {
@@ -722,9 +726,14 @@
                 id: 'carbon-steel', name: '탄소강', nameEn: 'Carbon Steel', symbol: 'Fe+C', category: 'ferrous',
                 ore: {name: '적철석(Fe₂O₃)', type: '산화광물 → 합금'},
                 locations: [
-                    {name: 'Pilbara (Newman)', country: '호주', lat: -23.35, lng: 119.73, pct: 37, type: 'mine'},
+                    {name: 'Pilbara - Mount Whaleback', country: '호주', lat: -23.37, lng: 119.67, pct: 37, type: 'mine'},
                     {name: 'Carajás S11D', country: '브라질', lat: -6.41, lng: -50.00, pct: 17, type: 'mine'},
-                    {name: '허베이 탕산제철', country: '중국', lat: 39.63, lng: 118.18, pct: 14, type: 'smelter'},
+                    {name: 'Kiruna Mine (LKAB)', country: '스웨덴', lat: 67.86, lng: 20.22, pct: 5, type: 'mine'},
+                    {name: 'Kryvyi Rih 철광 지구', country: '우크라이나', lat: 47.91, lng: 33.35, pct: 3, type: 'mine'},
+                    {name: 'Magnitogorsk 제철소', country: '러시아', lat: 53.39, lng: 59.04, pct: 4, type: 'smelter'},
+                    {name: 'Port Talbot 제철소', country: '영국 웨일스', lat: 51.59, lng: -3.77, pct: 2, type: 'smelter'},
+                    {name: 'Shagang 그룹 (장자강)', country: '중국', lat: 31.87, lng: 120.56, pct: 14, type: 'smelter'},
+                    {name: '허베이 탕산제철', country: '중국', lat: 39.63, lng: 118.18, pct: 10, type: 'smelter'},
                     {name: 'POSCO 포항제철', country: '한국', lat: 36.01, lng: 129.37, pct: 4, type: 'smelter'},
                     {name: 'Nippon Steel 기미츠', country: '일본', lat: 35.35, lng: 139.85, pct: 3, type: 'smelter'}
                 ],
@@ -820,11 +829,16 @@
                 id: 'cu', name: '구리', nameEn: 'Copper', symbol: 'Cu', category: 'heavy',
                 ore: {name: '황동석(CuFeS₂)', type: '황화광물'},
                 locations: [
+                    {name: 'Chuquicamata 노천/지하광산', country: '칠레 아타카마', lat: -22.29, lng: -68.90, pct: 8, type: 'mine'},
                     {name: 'Escondida Mine', country: '칠레', lat: -24.27, lng: -69.07, pct: 27, type: 'mine'},
                     {name: 'Cerro Verde Mine', country: '페루', lat: -16.54, lng: -71.60, pct: 11, type: 'mine'},
-                    {name: 'Kamoa-Kakula Mine', country: '콩고', lat: -10.77, lng: 26.50, pct: 8, type: 'mine'},
-                    {name: 'Grasberg Mine', country: '인도네시아', lat: -4.05, lng: 137.12, pct: 5, type: 'mine'},
-                    {name: 'Chuquicamata Mine', country: '칠레', lat: -22.29, lng: -68.90, pct: 5, type: 'mine'}
+                    {name: 'Kamoa-Kakula Mine', country: '콩고 DRC', lat: -10.77, lng: 26.50, pct: 8, type: 'mine'},
+                    {name: 'Grasberg Mine (해발 4,000m)', country: '인도네시아 파푸아', lat: -4.05, lng: 137.12, pct: 5, type: 'mine'},
+                    {name: 'Oyu Tolgoi Mine', country: '몽골', lat: 43.00, lng: 106.85, pct: 3, type: 'mine'},
+                    {name: 'Bingham Canyon Mine', country: '미국 유타', lat: 40.52, lng: -112.15, pct: 2, type: 'mine'},
+                    {name: 'Chuquicamata 제련·전해정련소', country: '칠레 칼라마', lat: -22.46, lng: -68.93, pct: 5, type: 'smelter'},
+                    {name: 'Swansea 역사적 구리 제련 유적', country: '영국 웨일스', lat: 51.62, lng: -3.94, pct: 0, type: 'smelter'},
+                    {name: 'Hinkley Point C 원전 (구리 터빈)', country: '영국 서머싯', lat: 51.21, lng: -3.13, pct: 0, type: 'refinery'}
                 ],
                 properties: {
                     density: '8.96 g/cm³', meltingPoint: '1,085°C', tensileStrength: '200-500 MPa',
@@ -1114,11 +1128,16 @@
                 id: 'li', name: '리튬', nameEn: 'Lithium', symbol: 'Li', category: 'rare',
                 ore: {name: '스포듀민/염수(브라인)', type: '규산염광물/염수'},
                 locations: [
-                    {name: 'Greenbushes Mine', country: '호주', lat: -33.85, lng: 116.06, pct: 50, type: 'mine'},
-                    {name: 'Salar de Atacama (SQM)', country: '칠레', lat: -23.50, lng: -68.15, pct: 20, type: 'mine'},
-                    {name: '야장 리튬광 (Yajiang)', country: '중국', lat: 30.03, lng: 101.00, pct: 15, type: 'mine'},
+                    {name: 'Salar de Atacama 염수추출 (SQM/Albemarle)', country: '칠레 아타카마', lat: -23.50, lng: -68.15, pct: 20, type: 'mine'},
+                    {name: 'Greenbushes 스포듀민 광산', country: '호주 서부', lat: -33.85, lng: 116.06, pct: 50, type: 'mine'},
+                    {name: 'Salar de Uyuni 염수', country: '볼리비아', lat: -20.13, lng: -67.49, pct: 3, type: 'mine'},
                     {name: 'Salar de Olaroz', country: '아르헨티나', lat: -23.52, lng: -66.69, pct: 5, type: 'mine'},
-                    {name: 'Whabouchi Mine', country: '캐나다', lat: 49.76, lng: -75.93, pct: 2, type: 'mine'}
+                    {name: '칭하이-티베트 고원 염호', country: '중국', lat: 36.70, lng: 99.08, pct: 13, type: 'mine'},
+                    {name: 'Yajiang 리튬광', country: '중국 쓰촨', lat: 30.03, lng: 101.00, pct: 5, type: 'mine'},
+                    {name: 'Jadar Valley 자다라이트 광상', country: '세르비아', lat: 44.42, lng: 19.23, pct: 0, type: 'mine'},
+                    {name: 'Tesla Gigafactory 1 (배터리 생산)', country: '미국 네바다', lat: 39.54, lng: -119.44, pct: 0, type: 'refinery'},
+                    {name: 'CATL 배터리 공장 (푸딩)', country: '중국 푸젠', lat: 27.32, lng: 120.19, pct: 0, type: 'refinery'},
+                    {name: 'Umicore 재활용 제련소', country: '벨기에 호보켄', lat: 51.22, lng: 4.37, pct: 0, type: 'smelter'}
                 ],
                 properties: {
                     density: '0.534 g/cm³', meltingPoint: '180°C', tensileStrength: '40-80 MPa',
@@ -1408,11 +1427,16 @@
                 id: 'si', name: '규소', nameEn: 'Silicon', symbol: 'Si', category: 'metalloid',
                 ore: {name: '석영(SiO₂)/규사', type: '산화광물'},
                 locations: [
+                    {name: 'Spruce Pine 고순도 석영광산', country: '미국 노스캐롤라이나', lat: 35.92, lng: -82.07, pct: 5, type: 'mine'},
+                    {name: 'Serabal 규사 채석장', country: '스페인 갈리시아', lat: 43.18, lng: -8.55, pct: 3, type: 'mine'},
+                    {name: 'Lochaline 규사 광산', country: '영국 스코틀랜드', lat: 56.53, lng: -5.77, pct: 1, type: 'mine'},
+                    {name: 'Sabón 실리콘 공장', country: '스페인 갈리시아', lat: 43.31, lng: -8.38, pct: 2, type: 'smelter'},
                     {name: '윈난 실리콘 제련단지', country: '중국', lat: 25.04, lng: 102.71, pct: 40, type: 'smelter'},
                     {name: '신장 실리콘', country: '중국', lat: 43.80, lng: 87.60, pct: 30, type: 'smelter'},
                     {name: 'Elkem Bremanger', country: '노르웨이', lat: 61.76, lng: 5.15, pct: 5, type: 'smelter'},
-                    {name: 'Bratsk (Rusal Si)', country: '러시아', lat: 56.15, lng: 101.61, pct: 5, type: 'smelter'},
-                    {name: 'Wacker Burghausen', country: '독일', lat: 48.17, lng: 12.83, pct: 3, type: 'refinery'}
+                    {name: 'Wacker Burghausen 폴리실리콘', country: '독일 바이에른', lat: 48.17, lng: 12.83, pct: 3, type: 'refinery'},
+                    {name: 'Shin-Etsu 실리콘웨이퍼 공장', country: '미국 오레곤 포틀랜드', lat: 45.52, lng: -122.68, pct: 2, type: 'refinery'},
+                    {name: 'TSMC 반도체 팹 (신주)', country: '대만', lat: 24.77, lng: 121.02, pct: 0, type: 'refinery'}
                 ],
                 properties: {
                     density: '2.33 g/cm³', meltingPoint: '1,414°C', tensileStrength: '~100 MPa(취성)',
