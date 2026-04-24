@@ -2,665 +2,1041 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>금속 백과사전 - Interactive Metals Encyclopedia</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #f5f5f8;
-            color: #333333;
-            overflow: hidden;
-        }
-
-        .container {
-            display: flex;
-            height: calc(100vh - 20px);
-            width: 100vw;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 280px;
-            background-color: #ffffff;
-            border-right: 1px solid #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            flex-shrink: 0;
-        }
-
-        .sidebar-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 12px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 8px 12px;
-            background-color: #f0f0f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            color: #333333;
-            font-size: 13px;
-        }
-
-        .search-input::placeholder {
-            color: #999999;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #999999;
-            background-color: #e8e8f0;
-        }
-
-        .sidebar-content {
-            overflow-y: auto;
-            flex: 1;
-            padding: 12px;
-        }
-
-        .accordion-group {
-            margin-bottom: 8px;
-        }
-
-        .accordion-header {
-            padding: 10px 12px;
-            background-color: #f0f0f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            user-select: none;
-            transition: background-color 0.2s;
-        }
-
-        .accordion-header:hover {
-            background-color: #e5e5ec;
-        }
-
-        .accordion-header.active {
-            color: #1a1a2e;
-        }
-
-        .accordion-arrow {
-            display: inline-block;
-            transition: transform 0.3s;
-            font-size: 12px;
-        }
-
-        .accordion-header.active .accordion-arrow {
-            transform: rotate(90deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .accordion-content.active {
-            max-height: 500px;
-        }
-
-        .metal-item {
-            padding: 8px 12px;
-            margin: 4px 0;
-            background-color: #f0f0f5;
-            border-left: 3px solid #ccc;
-            border-radius: 2px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .metal-item:hover {
-            background-color: #e5e5ec;
-            transform: translateX(4px);
-        }
-
-        .metal-item.selected {
-            background-color: #e0e0ea;
-            color: #1a1a2e;
-        }
-
-        .metal-symbol {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            background-color: rgba(0, 0, 0, 0.08);
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: 700;
-            color: #1a1a2e;
-            flex-shrink: 0;
-        }
-
-        .metal-names {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .metal-name-ko {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-
-        .metal-name-en {
-            font-size: 10px;
-            color: #666666;
-        }
-
-        /* GLOBE CONTAINER */
-        .globe-container {
-            flex: 1;
-            background-color: #f5f5f8;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #globeViz {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .globe-info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid #e0e0e0;
-            padding: 12px 16px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #666666;
-            backdrop-filter: blur(10px);
-        }
-
-        /* SIDE PANEL */
-        .info-panel {
-            width: 0;
-            background-color: #ffffff;
-            border-left: 1px solid #e0e0e0;
-            overflow-y: auto;
-            transition: width 0.3s ease-out;
-            position: relative;
-        }
-
-        .info-panel.open {
-            width: 400px;
-        }
-
-        .panel-header {
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            position: sticky;
-            top: 0;
-            background-color: #ffffff;
-            z-index: 10;
-        }
-
-        .panel-close-btn {
-            width: 24px;
-            height: 24px;
-            background: none;
-            border: none;
-            color: #666666;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .panel-close-btn:hover {
-            color: #1a1a2e;
-        }
-
-        .panel-title {
-            flex: 1;
-        }
-
-        .metal-title-ko {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-
-        .metal-title-en {
-            font-size: 12px;
-            color: #666666;
-        }
-
-        .metal-symbol-large {
-            width: 50px;
-            height: 50px;
-            background-color: #f0f0f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a2e;
-            flex-shrink: 0;
-        }
-
-        .metal-category-tag {
-            display: inline-block;
-            padding: 4px 8px;
-            background-color: #e0e0ea;
-            border-radius: 3px;
-            font-size: 11px;
-            color: #666666;
-            margin-top: 8px;
-        }
-
-        .panel-content {
-            padding: 20px;
-        }
-
-        .section {
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1a1a2e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .ore-info {
-            background-color: #f0f0f5;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-
-        .ore-name {
-            font-weight: 600;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-
-        .ore-type {
-            color: #666666;
-            font-size: 11px;
-        }
-
-        .locations-list {
-            font-size: 12px;
-        }
-
-        .location-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .location-item:last-child {
-            border-bottom: none;
-        }
-
-        .location-name {
-            font-weight: 500;
-            color: #1a1a2e;
-        }
-
-        .location-country {
-            color: #666666;
-            font-size: 11px;
-        }
-
-        .location-pct {
-            color: #999999;
-            font-size: 11px;
-            margin-left: 8px;
-        }
-
-        .properties-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .property-card {
-            background-color: #f0f0f5;
-            padding: 10px;
-            border-radius: 4px;
-            border-left: 2px solid #3C3489;
-        }
-
-        .property-label {
-            font-size: 10px;
-            color: #666666;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .property-value {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1a1a2e;
-            word-break: break-word;
-        }
-
-        .bars-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .bar-item {
-            font-size: 12px;
-        }
-
-        .bar-label {
-            margin-bottom: 6px;
-            color: #666666;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .bar-label-name {
-            font-weight: 500;
-        }
-
-        .bar-label-value {
-            font-size: 11px;
-            color: #999999;
-        }
-
-        .bar-container {
-            height: 6px;
-            background-color: #f0f0f5;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3C3489, #534AB7);
-            border-radius: 3px;
-        }
-
-        .process-flow {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            font-size: 11px;
-        }
-
-        .process-step {
-            background-color: #f0f0f5;
-            padding: 6px 10px;
-            border-radius: 3px;
-            color: #1a1a2e;
-            white-space: nowrap;
-        }
-
-        .process-arrow {
-            color: #999999;
-            font-weight: bold;
-        }
-
-        .carbon-gauge {
-            background-color: #f0f0f5;
-            padding: 12px;
-            border-radius: 4px;
-        }
-
-        .carbon-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 8px;
-        }
-
-        .carbon-bar {
-            height: 8px;
-            background-color: #f5f5f8;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-
-        .carbon-fill {
-            height: 100%;
-            background-color: #4ade80;
-            border-radius: 4px;
-        }
-
-        .carbon-label {
-            font-size: 10px;
-            color: #666666;
-        }
-
-        .applications-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            font-size: 11px;
-        }
-
-        .app-chip {
-            background-color: #f0f0f5;
-            padding: 4px 8px;
-            border-radius: 12px;
-            color: #666666;
-            border: 1px solid #e0e0e0;
-        }
-
-        .story-section {
-            background-color: #f0f0f5;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            line-height: 1.6;
-            color: #444444;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .story-content {
-            white-space: pre-wrap;
-        }
-
-        /* CATEGORY COLORS */
-        .ferrous { --color: #3C3489; }
-        .heavy { --color: #D85A30; }
-        .light { --color: #0F6E56; }
-        .precious { --color: #EF9F27; }
-        .rare { --color: #534AB7; }
-        .ree { --color: #1A8A7A; }
-        .metalloid { --color: #888780; }
-
-        .metal-item.ferrous { border-left-color: #3C3489; }
-        .metal-item.heavy { border-left-color: #D85A30; }
-        .metal-item.light { border-left-color: #0F6E56; }
-        .metal-item.precious { border-left-color: #EF9F27; }
-        .metal-item.rare { border-left-color: #534AB7; }
-        .metal-item.ree { border-left-color: #1A8A7A; }
-        .metal-item.metalloid { border-left-color: #888780; }
-
-        .property-card.ferrous { border-left-color: #3C3489; }
-        .property-card.heavy { border-left-color: #D85A30; }
-        .property-card.light { border-left-color: #0F6E56; }
-        .property-card.precious { border-left-color: #EF9F27; }
-        .property-card.rare { border-left-color: #534AB7; }
-        .property-card.ree { border-left-color: #1A8A7A; }
-        .property-card.metalloid { border-left-color: #888780; }
-
-        .bar-fill.ferrous { background: linear-gradient(90deg, #3C3489, #5a4dbd); }
-        .bar-fill.heavy { background: linear-gradient(90deg, #D85A30, #ff7a51); }
-        .bar-fill.light { background: linear-gradient(90deg, #0F6E56, #1a9a7a); }
-        .bar-fill.precious { background: linear-gradient(90deg, #EF9F27, #ffc451); }
-        .bar-fill.rare { background: linear-gradient(90deg, #534AB7, #7865d9); }
-        .bar-fill.ree { background: linear-gradient(90deg, #1A8A7A, #2bb89a); }
-        .bar-fill.metalloid { background: linear-gradient(90deg, #888780, #aaa89a); }
-
-        /* Scrollbar styling */
-        .sidebar-content::-webkit-scrollbar,
-        .info-panel::-webkit-scrollbar,
-        .story-section::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar-content::-webkit-scrollbar-track,
-        .info-panel::-webkit-scrollbar-track,
-        .story-section::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .sidebar-content::-webkit-scrollbar-thumb,
-        .info-panel::-webkit-scrollbar-thumb,
-        .story-section::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 3px;
-        }
-
-        .sidebar-content::-webkit-scrollbar-thumb:hover,
-        .info-panel::-webkit-scrollbar-thumb:hover,
-        .story-section::-webkit-scrollbar-thumb:hover {
-            background: #aaa;
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.95);
-            color: #333;
-            padding: 6px 10px;
-            border-radius: 3px;
-            font-size: 11px;
-            pointer-events: none;
-            z-index: 100;
-            white-space: nowrap;
-            border: 1px solid #ddd;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Pulse animation for points */
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.6;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .pulsing-point {
-            animation: pulse 2s infinite;
-        }
-
-        /* Source ticker bar */
-        .source-ticker-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 20px;
-            background: rgba(30, 30, 50, 0.85);
-            backdrop-filter: blur(4px);
-            overflow: hidden;
-            z-index: 9999;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .source-ticker-track {
-            display: flex;
-            width: max-content;
-            animation: ticker-scroll 120s linear infinite;
-        }
-        .source-ticker-track:hover {
-            animation-play-state: paused;
-        }
-        .source-ticker-content {
-            display: flex;
-            align-items: center;
-            height: 20px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .source-ticker-content span {
-            font-size: 10px;
-            color: rgba(255,255,255,0.55);
-            padding: 0 18px;
-            letter-spacing: 0.02em;
-            font-family: 'SF Mono', 'Consolas', monospace;
-        }
-        .source-ticker-content span a {
-            color: rgba(255,255,255,0.55);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .source-ticker-content span a:hover {
-            color: rgba(255,255,255,0.9);
-        }
-        .source-ticker-content .src-dot {
-            display: inline-block;
-            width: 3px;
-            height: 3px;
-            background: rgba(255,255,255,0.25);
-            border-radius: 50%;
-            margin: 0 6px;
-            vertical-align: middle;
-        }
-        @keyframes ticker-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0d1a">
+    <title>Metals Atlas — 금속 백과사전</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css" rel="stylesheet">
+
+<style>
+/* ============================================================
+   METALS ATLAS — Design tokens
+   ============================================================ */
+:root {
+    /* Spacing (8pt base) */
+    --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+    --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 48px; --s-9: 64px;
+
+    /* Radii */
+    --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-full: 999px;
+
+    /* Motion */
+    --ease: cubic-bezier(.22,.61,.36,1);
+    --fast: 160ms var(--ease);
+    --med:  260ms var(--ease);
+    --slow: 420ms var(--ease);
+
+    /* Dark palette (default) */
+    --bg-0: #07080f;
+    --bg-1: #0b0d1a;
+    --bg-2: #111428;
+    --bg-3: #171a33;
+    --bg-4: #1e2240;
+    --surface-glass: rgba(18, 22, 46, 0.72);
+    --border:       rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --divider:      rgba(255,255,255,0.06);
+
+    --text-1: #f3f4fb;
+    --text-2: #c7ccde;
+    --text-3: #8890ad;
+    --text-4: #5a6286;
+
+    --accent:        #7c87ff;
+    --accent-hover:  #a1a9ff;
+    --accent-soft:   rgba(124,135,255,0.16);
+
+    /* Category colors */
+    --cat-ferrous:    #8b7dff;
+    --cat-heavy:      #ff8766;
+    --cat-light:      #42c8a1;
+    --cat-precious:   #ffc85a;
+    --cat-rare:       #b583ff;
+    --cat-ree:        #3fdbc5;
+    --cat-metalloid:  #b5b8c9;
+
+    /* Type markers */
+    --type-mine:     #ffb84d;
+    --type-smelter:  #ff6b6b;
+    --type-refinery: #a78bfa;
+    --type-historic: #64748b;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.25);
+    --shadow-md: 0 8px 24px rgba(0,0,0,.35);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,.45);
+    --glow:      0 0 0 1px var(--border), 0 0 24px rgba(124,135,255,0.18);
+}
+
+/* Light theme */
+[data-theme="light"] {
+    --bg-0: #f6f7fb;
+    --bg-1: #ffffff;
+    --bg-2: #f0f2f8;
+    --bg-3: #e9ecf4;
+    --bg-4: #dde1ed;
+    --surface-glass: rgba(255,255,255,0.78);
+    --border:        rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.18);
+    --divider:       rgba(0,0,0,0.06);
+
+    --text-1: #0e1020;
+    --text-2: #2f3450;
+    --text-3: #5b637f;
+    --text-4: #8a91ab;
+
+    --accent:       #4a55d6;
+    --accent-hover: #2f3abe;
+    --accent-soft:  rgba(74,85,214,0.12);
+
+    --shadow-sm: 0 2px 6px rgba(40,50,80,0.08);
+    --shadow-md: 0 8px 24px rgba(40,50,80,0.12);
+    --shadow-lg: 0 20px 50px rgba(40,50,80,0.18);
+    --glow:      0 0 0 1px var(--border), 0 0 24px rgba(74,85,214,0.18);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body { height:100%; }
+body {
+    font-family: 'Pretendard Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: var(--bg-0);
+    color: var(--text-1);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+}
+
+button { font-family: inherit; color: inherit; cursor: pointer; background: transparent; border: none; }
+button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+}
+
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
+.app {
+    display: grid;
+    grid-template-columns: 320px 1fr 440px;
+    grid-template-rows: 56px 1fr;
+    grid-template-areas:
+        "header header header"
+        "sidebar globe panel";
+    height: 100vh;
+    width: 100vw;
+    background: var(--bg-0);
+}
+.app.panel-collapsed { grid-template-columns: 320px 1fr 0; }
+.app.panel-collapsed .info-panel { width: 0; border-left: 0; }
+
+@media (max-width: 1180px) {
+    .app { grid-template-columns: 280px 1fr 400px; }
+}
+@media (max-width: 960px) {
+    .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px 1fr auto;
+        grid-template-areas:
+            "header"
+            "globe"
+            "sidebar";
+    }
+    .info-panel { display: none; }
+    .info-panel.open {
+        display: block !important;
+        position: fixed; inset: 56px 0 0 0;
+        z-index: 100; width: 100vw !important;
+        border-left: 0 !important;
+    }
+    .sidebar { max-height: 280px; }
+}
+
+/* ============================================================
+   TOP HEADER
+   ============================================================ */
+.header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    padding: 0 var(--s-5);
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--divider);
+    z-index: 50;
+    position: relative;
+}
+.brand {
+    display: flex; align-items: center; gap: var(--s-3);
+    font-size: 15px; font-weight: 700; letter-spacing: -0.015em;
+    color: var(--text-1);
+    padding-right: var(--s-5);
+    border-right: 1px solid var(--divider);
+    height: 100%;
+    min-width: 220px;
+}
+.brand-mark {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: conic-gradient(from 210deg at 50% 50%, #7c87ff, #3fdbc5, #ffb84d, #ff8766, #7c87ff);
+    position: relative;
+    box-shadow: 0 0 20px rgba(124,135,255,0.4);
+}
+.brand-mark::after {
+    content: ""; position: absolute; inset: 4px;
+    border-radius: 5px; background: var(--bg-1);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-text b { font-size: 14px; }
+.brand-text small { font-size: 10px; color: var(--text-3); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.header-search {
+    flex: 1;
+    max-width: 520px;
+    position: relative;
+}
+.header-search input {
+    width: 100%; height: 36px;
+    padding: 0 36px 0 40px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    color: var(--text-1);
+    font-size: 13px;
+    transition: border-color var(--fast), background var(--fast);
+}
+.header-search input::placeholder { color: var(--text-4); }
+.header-search input:focus {
+    border-color: var(--accent);
+    background: var(--bg-3);
+    outline: none;
+}
+.header-search .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-3); pointer-events: none;
+}
+.header-search kbd {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-3); background: var(--bg-3);
+    padding: 2px 6px; border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.header-actions { display: flex; gap: var(--s-2); margin-left: auto; }
+.icon-btn {
+    width: 36px; height: 36px;
+    border-radius: var(--r-md);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-2);
+    transition: background var(--fast), color var(--fast);
+}
+.icon-btn:hover { background: var(--bg-2); color: var(--text-1); }
+.icon-btn.active { background: var(--accent-soft); color: var(--accent); }
+.icon-btn svg { width: 18px; height: 18px; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+    grid-area: sidebar;
+    background: var(--bg-1);
+    border-right: 1px solid var(--divider);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+.sidebar-toolbar {
+    padding: var(--s-4);
+    display: flex; gap: var(--s-2);
+    border-bottom: 1px solid var(--divider);
+}
+.filter-chip {
+    padding: 6px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-full);
+    font-size: 11px; font-weight: 600;
+    color: var(--text-2);
+    transition: all var(--fast);
+    white-space: nowrap;
+}
+.filter-chip:hover { background: var(--bg-3); color: var(--text-1); }
+.filter-chip.active { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+
+.sidebar-content {
+    flex: 1; overflow-y: auto;
+    padding: var(--s-2) var(--s-3) var(--s-5);
+}
+
+.cat-group { margin-top: var(--s-3); }
+.cat-header {
+    padding: 10px var(--s-3);
+    display: flex; align-items: center; gap: var(--s-2);
+    font-size: 10px; font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border-radius: var(--r-sm);
+    user-select: none;
+}
+.cat-header:hover { background: var(--bg-2); color: var(--text-2); }
+.cat-chevron {
+    display: inline-block; width: 10px; height: 10px;
+    transition: transform var(--fast);
+    opacity: 0.6;
+}
+.cat-group.open .cat-chevron { transform: rotate(90deg); }
+.cat-count {
+    margin-left: auto; padding: 2px 8px;
+    background: var(--bg-3);
+    border-radius: var(--r-full);
+    font-size: 10px; color: var(--text-3);
+    font-weight: 600;
+}
+.cat-swatch {
+    display: inline-block;
+    width: 8px; height: 8px; border-radius: 2px;
+}
+.cat-items {
+    display: grid; gap: 2px;
+    padding: var(--s-1) 0;
+    max-height: 0; overflow: hidden;
+    transition: max-height var(--med);
+}
+.cat-group.open .cat-items { max-height: 1200px; }
+
+.metal-btn {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center; gap: var(--s-3);
+    padding: 10px var(--s-3);
+    border-radius: var(--r-md);
+    background: transparent;
+    color: var(--text-2);
+    text-align: left;
+    transition: background var(--fast), color var(--fast), transform var(--fast);
+    position: relative;
+}
+.metal-btn::before {
+    content: ""; position: absolute;
+    left: 2px; top: 8px; bottom: 8px; width: 3px;
+    border-radius: 2px;
+    background: var(--cat-color, var(--accent));
+    opacity: 0;
+    transition: opacity var(--fast);
+}
+.metal-btn:hover { background: var(--bg-2); color: var(--text-1); }
+.metal-btn:hover::before { opacity: 0.4; }
+.metal-btn.active {
+    background: var(--bg-3);
+    color: var(--text-1);
+}
+.metal-btn.active::before { opacity: 1; }
+
+.metal-sym {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 18%, transparent);
+    color: var(--cat-color, var(--accent));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
+}
+.metal-meta { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.metal-name-ko { font-size: 13px; font-weight: 600; }
+.metal-name-en { font-size: 11px; color: var(--text-3); font-weight: 500; }
+.metal-loc-count {
+    font-size: 10px; color: var(--text-4);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--r-full);
+    background: var(--bg-2);
+}
+
+/* ============================================================
+   GLOBE
+   ============================================================ */
+.globe-wrap {
+    grid-area: globe;
+    position: relative; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 40%, #131738 0%, #07080f 70%);
+}
+[data-theme="light"] .globe-wrap {
+    background: radial-gradient(ellipse at 50% 40%, #eef1ff 0%, #f6f7fb 70%);
+}
+#globeViz { width: 100%; height: 100%; display: block; }
+
+.globe-hud {
+    position: absolute;
+    left: var(--s-5); top: var(--s-5);
+    display: flex; flex-direction: column; gap: var(--s-3);
+    z-index: 20;
+    max-width: 300px;
+}
+.hud-card {
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-4);
+    box-shadow: var(--shadow-md);
+}
+.hud-title {
+    font-size: 10px; color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em; font-weight: 700;
+    margin-bottom: var(--s-2);
+}
+.hud-stat-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; color: var(--text-2);
+    padding: 3px 0;
+}
+.hud-stat-row b { color: var(--text-1); font-size: 14px; font-weight: 700; }
+
+.legend {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 11px; color: var(--text-2);
+}
+.legend-row {
+    display: flex; align-items: center; gap: var(--s-2);
+    cursor: pointer;
+    padding: 2px 0;
+    user-select: none;
+    transition: opacity var(--fast);
+}
+.legend-row.off { opacity: 0.4; }
+.legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px currentColor;
+}
+.legend-dot.mine     { background: var(--type-mine);     color: var(--type-mine); }
+.legend-dot.smelter  { background: var(--type-smelter);  color: var(--type-smelter); }
+.legend-dot.refinery { background: var(--type-refinery); color: var(--type-refinery); }
+.legend-dot.historic { background: var(--type-historic); color: var(--type-historic); box-shadow: none; outline: 1px dashed var(--type-historic); outline-offset: -1px; }
+
+.globe-hint {
+    position: absolute;
+    right: var(--s-5); bottom: var(--s-5);
+    font-size: 11px; color: var(--text-4);
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-3) var(--s-4);
+    display: flex; gap: var(--s-4); align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    z-index: 20;
+}
+.globe-hint kbd {
+    background: var(--bg-3); padding: 2px 6px; border-radius: 4px;
+    border: 1px solid var(--border); font-size: 10px;
+    color: var(--text-2);
+}
+
+/* Onboarding hero */
+.hero-empty {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 1;
+    transition: opacity var(--slow);
+}
+.hero-empty.hidden { opacity: 0; }
+.hero-card {
+    max-width: 500px;
+    background: var(--surface-glass);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-xl);
+    padding: var(--s-7);
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+}
+.hero-title {
+    font-size: 28px; font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--s-3);
+    background: linear-gradient(135deg, var(--text-1), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+    font-size: 14px; color: var(--text-2);
+    line-height: 1.6;
+    margin-bottom: var(--s-5);
+}
+.hero-chips {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2);
+    margin-bottom: var(--s-5);
+}
+.hero-chip {
+    padding: 8px 14px;
+    border-radius: var(--r-full);
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    font-size: 12px; font-weight: 600;
+    color: var(--text-2);
+    transition: all var(--fast);
+}
+.hero-chip:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: transparent;
+    transform: translateY(-1px);
+}
+.hero-footnote {
+    font-size: 11px; color: var(--text-4);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ============================================================
+   INFO PANEL
+   ============================================================ */
+.info-panel {
+    grid-area: panel;
+    background: var(--bg-1);
+    border-left: 1px solid var(--divider);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    min-width: 0;
+}
+
+.panel-hero {
+    padding: var(--s-5);
+    border-bottom: 1px solid var(--divider);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--cat-color, var(--accent)) 10%, var(--bg-1)) 0%, var(--bg-1) 100%);
+    position: relative;
+}
+.panel-close {
+    position: absolute; right: var(--s-4); top: var(--s-4);
+    width: 28px; height: 28px;
+    border-radius: var(--r-full);
+    color: var(--text-3);
+    transition: background var(--fast), color var(--fast);
+}
+.panel-close:hover { background: var(--bg-2); color: var(--text-1); }
+.panel-hero-top {
+    display: flex; align-items: center; gap: var(--s-4);
+    margin-bottom: var(--s-4);
+}
+.panel-sym-lg {
+    width: 56px; height: 56px;
+    border-radius: var(--r-md);
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 20%, transparent);
+    color: var(--cat-color, var(--accent));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.03em;
+}
+.panel-titles { flex: 1; min-width: 0; }
+.panel-title {
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-1);
+    margin-bottom: 2px;
+    line-height: 1.1;
+}
+.panel-subtitle {
+    font-size: 13px; color: var(--text-3);
+    font-weight: 500;
+}
+.panel-cat-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px;
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 15%, transparent);
+    color: var(--cat-color, var(--accent));
+    border-radius: var(--r-full);
+    font-size: 11px; font-weight: 600;
+    margin-top: var(--s-2);
+}
+.panel-cat-tag::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor;
+}
+
+/* Tabs */
+.panel-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider);
+    padding: 0 var(--s-3);
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+}
+.panel-tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+    padding: 10px var(--s-3);
+    font-size: 12px; font-weight: 600;
+    color: var(--text-3);
+    position: relative;
+    transition: color var(--fast);
+    white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text-2); }
+.tab-btn.active { color: var(--text-1); }
+.tab-btn.active::after {
+    content: ""; position: absolute;
+    left: var(--s-3); right: var(--s-3); bottom: -1px;
+    height: 2px; background: var(--cat-color, var(--accent));
+    border-radius: 2px 2px 0 0;
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--s-5);
+}
+.tab-pane { display: none; }
+.tab-pane.active { display: block; animation: fadein 0.3s; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Overview cards */
+.overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-3);
+    margin-bottom: var(--s-5);
+}
+.stat-card {
+    padding: var(--s-4);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+}
+.stat-card.wide { grid-column: span 2; }
+.stat-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin-bottom: 6px;
+}
+.stat-value {
+    font-size: 15px; font-weight: 700;
+    color: var(--text-1);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.01em;
+}
+.stat-detail {
+    font-size: 11px; color: var(--text-3);
+    margin-top: 4px;
+}
+.ore-card {
+    padding: var(--s-4);
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 8%, var(--bg-2));
+    border: 1px solid color-mix(in srgb, var(--cat-color, var(--accent)) 30%, transparent);
+    border-radius: var(--r-md);
+    margin-bottom: var(--s-5);
+}
+.ore-card .stat-label { color: var(--cat-color, var(--accent)); }
+.ore-name-big { font-size: 16px; font-weight: 700; color: var(--text-1); }
+
+.section-h {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin: var(--s-5) 0 var(--s-3);
+    display: flex; align-items: center; gap: var(--s-2);
+}
+.section-h .line { flex: 1; height: 1px; background: var(--divider); }
+
+/* Locations list with grouping & search */
+.loc-toolbar {
+    display: flex; gap: var(--s-2);
+    margin-bottom: var(--s-3);
+}
+.loc-search {
+    flex: 1;
+    height: 32px;
+    padding: 0 var(--s-3);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    color: var(--text-1);
+    font-size: 12px;
+}
+.loc-search:focus { outline: none; border-color: var(--accent); }
+.loc-filter {
+    padding: 0 var(--s-3);
+    height: 32px;
+    border-radius: var(--r-sm);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 11px; font-weight: 600;
+    transition: all var(--fast);
+}
+.loc-filter.active { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+
+.loc-group { margin-bottom: var(--s-4); }
+.loc-group-h {
+    font-size: 10px; font-weight: 700;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--divider);
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: var(--s-2);
+}
+.loc-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    align-items: center;
+    gap: var(--s-3);
+    padding: 10px var(--s-2);
+    border-radius: var(--r-sm);
+    text-align: left;
+    transition: background var(--fast);
+}
+.loc-item:hover { background: var(--bg-2); }
+.loc-type-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
+}
+.loc-type-dot.mine     { background: var(--type-mine);     color: var(--type-mine); }
+.loc-type-dot.smelter  { background: var(--type-smelter);  color: var(--type-smelter); }
+.loc-type-dot.refinery { background: var(--type-refinery); color: var(--type-refinery); }
+.loc-type-dot.historic { background: var(--type-historic); color: var(--type-historic); box-shadow: none; outline: 1px dashed var(--type-historic); outline-offset: -1px; }
+.loc-text { display: flex; flex-direction: column; min-width: 0; }
+.loc-name {
+    font-size: 12px; font-weight: 600; color: var(--text-1);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.loc-country { font-size: 10px; color: var(--text-3); }
+.loc-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-2);
+    padding: 3px 8px;
+    background: var(--bg-3);
+    border-radius: var(--r-full);
+}
+.loc-empty {
+    padding: var(--s-5);
+    text-align: center;
+    color: var(--text-4);
+    font-size: 12px;
+}
+
+/* Properties tab */
+.prop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-2);
+    margin-bottom: var(--s-5);
+}
+.prop-card {
+    padding: var(--s-3);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+}
+.prop-label {
+    font-size: 10px; font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.prop-value {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-1);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.bars-list { display: flex; flex-direction: column; gap: var(--s-3); }
+.bar-row { display: flex; flex-direction: column; gap: 6px; }
+.bar-meta {
+    display: flex; justify-content: space-between;
+    font-size: 11px;
+}
+.bar-meta-name { color: var(--text-2); font-weight: 600; }
+.bar-meta-val {
+    color: var(--text-1); font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+.bar-track {
+    height: 6px; border-radius: 3px;
+    background: var(--bg-3);
+    overflow: hidden;
+    position: relative;
+}
+.bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--cat-color, var(--accent)) 0%, color-mix(in srgb, var(--cat-color, var(--accent)) 70%, #fff) 100%);
+    transition: width 0.6s var(--ease);
+}
+
+/* Process flow (vertical timeline) */
+.proc-steps {
+    display: flex; flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+.proc-step {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: var(--s-3);
+    padding: var(--s-2) 0;
+    position: relative;
+}
+.proc-step::before {
+    content: "";
+    position: absolute;
+    left: 13px; top: 30px; bottom: -10px;
+    width: 2px;
+    background: var(--bg-3);
+}
+.proc-step:last-child::before { display: none; }
+.proc-num {
+    width: 26px; height: 26px;
+    border-radius: var(--r-full);
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 18%, var(--bg-3));
+    color: var(--cat-color, var(--accent));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    z-index: 2; position: relative;
+}
+.proc-label {
+    font-size: 13px; color: var(--text-1);
+    font-weight: 500;
+    padding: 3px 0;
+}
+
+/* Carbon gauge */
+.carbon-card {
+    padding: var(--s-4);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    margin-bottom: var(--s-4);
+}
+.carbon-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--s-3); }
+.carbon-val {
+    font-size: 22px; font-weight: 800;
+    color: var(--text-1);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
+}
+.carbon-val small { font-size: 11px; color: var(--text-3); font-weight: 500; font-family: inherit; }
+.carbon-badge {
+    padding: 4px 10px;
+    border-radius: var(--r-full);
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.carbon-badge.low    { background: rgba(74, 222, 128, 0.16); color: #4ade80; }
+.carbon-badge.medium { background: rgba(251, 191, 36, 0.16); color: #fbbf24; }
+.carbon-badge.high   { background: rgba(248, 113, 113, 0.16); color: #f87171; }
+.carbon-track {
+    height: 8px; border-radius: 4px;
+    background: var(--bg-3);
+    overflow: hidden;
+    position: relative;
+}
+.carbon-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.8s var(--ease);
+}
+.carbon-scale {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--text-4);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 6px;
+}
+
+/* App chips */
+.app-chips {
+    display: flex; flex-wrap: wrap;
+    gap: var(--s-2);
+}
+.app-chip {
+    padding: 6px 12px;
+    border-radius: var(--r-full);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    font-size: 11px; font-weight: 500;
+    color: var(--text-2);
+    transition: all var(--fast);
+}
+.app-chip:hover {
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 15%, transparent);
+    color: var(--cat-color, var(--accent));
+    border-color: transparent;
+}
+
+/* Story carousel */
+.story-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: var(--s-3);
+}
+.story-nav {
+    display: flex; align-items: center; gap: var(--s-2);
+}
+.story-nav button {
+    width: 28px; height: 28px;
+    border-radius: var(--r-full);
+    background: var(--bg-2);
+    color: var(--text-2);
+    transition: all var(--fast);
+}
+.story-nav button:hover:not(:disabled) { background: var(--bg-3); color: var(--text-1); }
+.story-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+.story-nav-count {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: 'JetBrains Mono', monospace;
+    min-width: 40px;
+    text-align: center;
+}
+.story-card {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--cat-color, var(--accent)) 10%, var(--bg-2)) 0%, var(--bg-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-5);
+    min-height: 260px;
+    animation: fadein 0.35s;
+}
+.story-title {
+    font-size: 17px; font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin-bottom: var(--s-3);
+}
+.story-body {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.75;
+    white-space: pre-wrap;
+}
+.story-pager {
+    display: flex; gap: 4px;
+    justify-content: center;
+    margin-top: var(--s-4);
+}
+.story-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--bg-3);
+    transition: all var(--fast);
+    cursor: pointer;
+}
+.story-dot.active {
+    background: var(--cat-color, var(--accent));
+    width: 20px;
+    border-radius: 3px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-4); }
+
+/* Source ticker (kept at bottom, dimmed) */
+.source-ticker-wrapper {
+    grid-column: 1 / -1;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 22px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    z-index: 60;
+    border-top: 1px solid var(--border);
+}
+[data-theme="light"] .source-ticker-wrapper { background: rgba(30,30,50,0.78); }
+.source-ticker-track { display: flex; width: max-content; animation: ticker-scroll 150s linear infinite; }
+.source-ticker-track:hover { animation-play-state: paused; }
+.source-ticker-content {
+    display: flex; align-items: center; height: 22px;
+    white-space: nowrap; flex-shrink: 0;
+}
+.source-ticker-content span {
+    font-size: 10px;
+    color: rgba(255,255,255,0.48);
+    padding: 0 16px;
+    letter-spacing: 0.02em;
+    font-family: 'JetBrains Mono', monospace;
+}
+.source-ticker-content span a {
+    color: rgba(255,255,255,0.48);
+    text-decoration: none;
+    transition: color var(--fast);
+}
+.source-ticker-content span a:hover { color: rgba(255,255,255,0.9); }
+.source-ticker-content .src-dot {
+    display: inline-block; width: 3px; height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%; margin: 0 4px;
+    vertical-align: middle;
+}
+@keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.hidden { display: none !important; }
+
+/* Globe marker labels override */
+.marker-label {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    font-family: 'Pretendard Variable', sans-serif !important;
+    color: var(--text-1) !important;
+    background: rgba(11, 13, 26, 0.82) !important;
+    border: 1px solid var(--border) !important;
+    padding: 3px 7px !important;
+    border-radius: 5px !important;
+    white-space: nowrap !important;
+    pointer-events: none !important;
+    transform: translate(-50%, -120%) !important;
+    backdrop-filter: blur(6px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+[data-theme="light"] .marker-label {
+    background: rgba(255,255,255,0.95) !important;
+    color: #0e1020 !important;
+}
+</style>
+
 </head>
 <body>
-    <!-- Source Ticker -->
+
+<!-- Source Ticker -->
     <div class="source-ticker-wrapper">
         <div class="source-ticker-track">
             <div class="source-ticker-content">
@@ -714,114 +1090,241 @@
         </div>
     </div>
 
-    <div class="container" style="margin-top: 20px;">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">금속 백과사전</div>
-                <input type="text" class="search-input" id="searchInput" placeholder="금속 검색...">
-            </div>
-            <div class="sidebar-content" id="sidebarContent">
-                <!-- Accordion groups will be populated here -->
-            </div>
-        </div>
-
-        <!-- GLOBE -->
-        <div class="globe-container">
-            <div id="globeViz"></div>
-            <div class="globe-info">
-                <div>마우스: 회전 | 스크롤: 줌</div>
-                <div style="margin-top: 4px; color: #999;">금속을 선택하면 산지가 표시됩니다</div>
+<div class="app" id="app">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <div class="brand-text">
+                <b>Metals Atlas</b>
+                <small>Interactive encyclopedia</small>
             </div>
         </div>
+        <div class="header-search">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="금속·국가·광산·제철소 검색… (예: POSCO, 칠레, Fe)" autocomplete="off">
+            <kbd>/</kbd>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="toggleTheme" title="테마 전환" aria-label="테마 전환">
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg class="icon-sun hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </button>
+            <a class="icon-btn" href="https://github.com/1tree1/metals-encyclopedia" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.39-1.34-1.76-1.34-1.76-1.08-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.08 1.83 2.81 1.3 3.5.99.1-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .3"/></svg>
+            </a>
+        </div>
+    </header>
 
-        <!-- INFO PANEL -->
-        <div class="info-panel" id="infoPanel">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <div class="metal-title-ko" id="panelMetalNameKo"></div>
-                    <div class="metal-title-en" id="panelMetalNameEn"></div>
-                    <div class="metal-category-tag" id="panelMetalCategory"></div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-toolbar" id="filterChips">
+            <button class="filter-chip active" data-filter="all">전체</button>
+            <button class="filter-chip" data-filter="ferrous" style="--cat-color: var(--cat-ferrous)">철</button>
+            <button class="filter-chip" data-filter="heavy">비철</button>
+            <button class="filter-chip" data-filter="light">경금속</button>
+            <button class="filter-chip" data-filter="rare">희유</button>
+        </div>
+        <div class="sidebar-content" id="sidebarContent"></div>
+    </aside>
+
+    <!-- GLOBE -->
+    <section class="globe-wrap">
+        <div id="globeViz"></div>
+
+        <!-- Onboarding Hero -->
+        <div class="hero-empty" id="heroEmpty">
+            <div class="hero-card">
+                <div class="hero-title">지구를 돌려 금속을 만나다</div>
+                <div class="hero-sub">
+                    427개의 광산·제철소·정련소가 지구본에 핀으로 표시됩니다.<br>
+                    금속을 선택하면 산지, 물성, 가공 공정, 그리고 그 이면의 이야기가 열립니다.
                 </div>
-                <div class="metal-symbol-large" id="panelMetalSymbol"></div>
-                <button class="panel-close-btn" id="panelCloseBtn">✕</button>
+                <div class="hero-chips" id="heroChips">
+                    <button class="hero-chip" data-metal-id="fe">⚙️ 순철 (Fe)</button>
+                    <button class="hero-chip" data-metal-id="carbon-steel">🔩 탄소강</button>
+                    <button class="hero-chip" data-metal-id="cu">🟤 구리 (Cu)</button>
+                    <button class="hero-chip" data-metal-id="al">✈️ 알루미늄 (Al)</button>
+                    <button class="hero-chip" data-metal-id="li">🔋 리튬 (Li)</button>
+                </div>
+                <div class="hero-footnote">← 사이드바에서 38개 금속 탐색</div>
             </div>
-            <div class="panel-content">
-                <!-- Ore Information -->
-                <div class="section">
-                    <div class="section-title">원석 정보</div>
-                    <div class="ore-info">
-                        <div class="ore-name" id="oreNameKo"></div>
-                        <div class="ore-type" id="oreType"></div>
+        </div>
+
+        <!-- Globe HUD -->
+        <div class="globe-hud hidden" id="globeHud">
+            <div class="hud-card">
+                <div class="hud-title" id="hudMetalName">—</div>
+                <div class="hud-stat-row"><span>광산</span><b id="hudMineCount">0</b></div>
+                <div class="hud-stat-row"><span>제철/제련소</span><b id="hudSmelterCount">0</b></div>
+                <div class="hud-stat-row"><span>정련소</span><b id="hudRefineryCount">0</b></div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-title">레이어 필터</div>
+                <div class="legend" id="legendContainer">
+                    <div class="legend-row" data-layer="mine"><span class="legend-dot mine"></span>광산</div>
+                    <div class="legend-row" data-layer="smelter"><span class="legend-dot smelter"></span>제철·제련소</div>
+                    <div class="legend-row" data-layer="refinery"><span class="legend-dot refinery"></span>정련소</div>
+                    <div class="legend-row" data-layer="historic"><span class="legend-dot historic"></span>역사 유적·폐광</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="globe-hint">
+            <span><kbd>Drag</kbd> 회전</span>
+            <span><kbd>Scroll</kbd> 줌</span>
+            <span><kbd>/</kbd> 검색</span>
+            <span><kbd>Esc</kbd> 닫기</span>
+        </div>
+    </section>
+
+    <!-- INFO PANEL -->
+    <aside class="info-panel" id="infoPanel" aria-label="금속 상세 정보">
+        <div class="panel-hero">
+            <button class="panel-close icon-btn" id="panelClose" aria-label="닫기">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="panel-hero-top">
+                <div class="panel-sym-lg" id="panelSym"></div>
+                <div class="panel-titles">
+                    <h1 class="panel-title" id="panelTitle"></h1>
+                    <div class="panel-subtitle" id="panelSubtitle"></div>
+                    <div class="panel-cat-tag" id="panelCatTag"></div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="panel-tabs" role="tablist">
+            <button class="tab-btn active" data-tab="overview" role="tab">개요</button>
+            <button class="tab-btn" data-tab="locations" role="tab">산지</button>
+            <button class="tab-btn" data-tab="props" role="tab">물성</button>
+            <button class="tab-btn" data-tab="process" role="tab">공정·환경</button>
+            <button class="tab-btn" data-tab="stories" role="tab">스토리</button>
+        </nav>
+
+        <div class="panel-body">
+            <!-- Overview tab -->
+            <div class="tab-pane active" data-pane="overview">
+                <div class="ore-card">
+                    <div class="stat-label">주원광</div>
+                    <div class="ore-name-big" id="oreName"></div>
+                    <div class="stat-detail" id="oreType"></div>
+                </div>
+                <div class="overview-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">매장량</div>
+                        <div class="stat-value" id="statReserves">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">누적 채굴</div>
+                        <div class="stat-value" id="statMined">—</div>
+                    </div>
+                    <div class="stat-card wide">
+                        <div class="stat-label">국제가격</div>
+                        <div class="stat-value" id="statPrice">—</div>
                     </div>
                 </div>
+                <h3 class="section-h">활용 분야<span class="line"></span></h3>
+                <div class="app-chips" id="appChips"></div>
+            </div>
 
-                <!-- Mining Locations -->
-                <div class="section">
-                    <div class="section-title">산지 정보 (주요 생산국)</div>
-                    <div class="locations-list" id="locationsList"></div>
+            <!-- Locations tab -->
+            <div class="tab-pane" data-pane="locations">
+                <div class="loc-toolbar">
+                    <input type="text" class="loc-search" id="locSearch" placeholder="위치·국가 필터…">
+                    <button class="loc-filter active" data-loc-filter="all">전체</button>
+                    <button class="loc-filter" data-loc-filter="mine">광산</button>
+                    <button class="loc-filter" data-loc-filter="smelter">제철소</button>
                 </div>
+                <div id="locGroups"></div>
+            </div>
 
-                <!-- Properties -->
-                <div class="section">
-                    <div class="section-title">물질 특성</div>
-                    <div class="properties-grid" id="propertiesGrid"></div>
-                </div>
+            <!-- Props tab -->
+            <div class="tab-pane" data-pane="props">
+                <h3 class="section-h">물리·기계적 특성<span class="line"></span></h3>
+                <div class="prop-grid" id="propGrid"></div>
+                <h3 class="section-h">상대 비교<span class="line"></span></h3>
+                <div class="bars-list" id="barsList"></div>
+            </div>
 
-                <!-- Comparative Bars -->
-                <div class="section">
-                    <div class="section-title">상대 비교</div>
-                    <div class="bars-grid" id="barsGrid"></div>
-                </div>
+            <!-- Process tab -->
+            <div class="tab-pane" data-pane="process">
+                <h3 class="section-h">가공 공정<span class="line"></span></h3>
+                <div class="proc-steps" id="procSteps"></div>
+                <h3 class="section-h">탄소 발자국<span class="line"></span></h3>
+                <div class="carbon-card" id="carbonCard"></div>
+            </div>
 
-                <!-- Processing -->
-                <div class="section">
-                    <div class="section-title">가공 프로세스</div>
-                    <div class="process-flow" id="processList"></div>
-                </div>
-
-                <!-- Environmental -->
-                <div class="section">
-                    <div class="section-title">환경 정보 (탄소발자국)</div>
-                    <div class="carbon-gauge" id="carbonGauge"></div>
-                </div>
-
-                <!-- Applications -->
-                <div class="section">
-                    <div class="section-title">활용 정보</div>
-                    <div class="applications-chips" id="appsList"></div>
-                </div>
-
-                <!-- Story -->
-                <div class="section">
-                    <div class="section-title">스토리</div>
-                    <div class="story-section" id="storySection">
-                        <div class="story-content">스토리 로딩 중...</div>
+            <!-- Stories tab -->
+            <div class="tab-pane" data-pane="stories">
+                <div class="story-head">
+                    <h3 class="section-h" style="margin: 0;">이야기<span class="line"></span></h3>
+                    <div class="story-nav">
+                        <button id="storyPrev" aria-label="이전 스토리">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <div class="story-nav-count" id="storyCount">—</div>
+                        <button id="storyNext" aria-label="다음 스토리">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
                     </div>
                 </div>
+                <div id="storyCard"></div>
+                <div class="story-pager" id="storyPager"></div>
             </div>
         </div>
-    </div>
+    </aside>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
-    <script src="stories.js"></script>
-
-    <script>
+<script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+<script src="stories.js"></script>
+<script>
         // METALS DATA
         const METALS_DATA = [
             {
                 id: 'fe', name: '순철', nameEn: 'Pure Iron', symbol: 'Fe', category: 'ferrous',
                 ore: {name: '적철석/자철석', type: '산화광물'},
                 locations: [
-                    {name: 'Pilbara - Whaleback Mine', country: '호주', lat: -23.37, lng: 119.67, pct: 37, type: 'mine'},
-                    {name: 'Carajás Mine (Serra Norte)', country: '브라질', lat: -6.07, lng: -50.17, pct: 17, type: 'mine'},
-                    {name: 'Kiruna Iron Mine (LKAB)', country: '스웨덴', lat: 67.86, lng: 20.22, pct: 6, type: 'mine'},
-                    {name: 'Kryvyi Rih 철광산', country: '우크라이나', lat: 47.91, lng: 33.35, pct: 4, type: 'mine'},
-                    {name: 'Magnitogorsk 제철소 (MMK)', country: '러시아', lat: 53.39, lng: 59.04, pct: 5, type: 'smelter'},
-                    {name: 'Azovstal 제철소 (마리우폴)', country: '우크라이나', lat: 47.10, lng: 37.62, pct: 3, type: 'smelter'},
-                    {name: 'Port Talbot 제철소 (Tata)', country: '영국 웨일스', lat: 51.59, lng: -3.77, pct: 2, type: 'smelter'},
-                    {name: 'Shagang 제철소 (장자강)', country: '중국', lat: 31.87, lng: 120.56, pct: 14, type: 'smelter'},
-                    {name: 'Lebedinsky GOK', country: '러시아', lat: 51.34, lng: 37.56, pct: 5, type: 'mine'}
+                    {name: 'Carajás S11D (Vale)', country: '브라질', lat: -6.41, lng: -50.00, pct: 83, type: 'mine'},
+                    {name: 'Carajás Serra Norte (Vale)', country: '브라질', lat: -6.07, lng: -50.17, pct: 80, type: 'mine'},
+                    {name: 'Pilbara Mt Whaleback (BHP)', country: '호주', lat: -23.37, lng: 119.67, pct: 67, type: 'mine'},
+                    {name: 'Pilbara Jimblebar (BHP)', country: '호주', lat: -22.83, lng: 119.59, pct: 67, type: 'mine'},
+                    {name: 'Pilbara South Flank (BHP)', country: '호주', lat: -22.25, lng: 119.42, pct: 80, type: 'mine'},
+                    {name: 'Pilbara Mining Area C (BHP)', country: '호주', lat: -22.27, lng: 117.89, pct: 59, type: 'mine'},
+                    {name: 'Pilbara Tom Price (Rio Tinto)', country: '호주', lat: -22.69, lng: 117.79, pct: 52, type: 'mine'},
+                    {name: 'Pilbara Gudai-Darri (Rio Tinto)', country: '호주', lat: -22.98, lng: 118.50, pct: 43, type: 'mine'},
+                    {name: 'Pilbara Yandicoogina (Rio Tinto)', country: '호주', lat: -22.70, lng: 119.07, pct: 51, type: 'mine'},
+                    {name: 'Pilbara Chichester (Fortescue)', country: '호주', lat: -22.35, lng: 119.68, pct: 100, type: 'mine'},
+                    {name: 'Pilbara Solomon (Fortescue)', country: '호주', lat: -22.45, lng: 118.89, pct: 51, type: 'mine'},
+                    {name: 'Pilbara Iron Bridge (Fortescue)', country: '호주', lat: -22.11, lng: 119.11, pct: 22, type: 'mine'},
+                    {name: 'Kiruna Mine LKAB (지하 1,365m)', country: '스웨덴', lat: 67.86, lng: 20.22, pct: 28, type: 'mine'},
+                    {name: 'Malmberget Mine (LKAB)', country: '스웨덴', lat: 67.17, lng: 20.67, pct: 14, type: 'mine'},
+                    {name: 'Svappavaara (LKAB)', country: '스웨덴', lat: 67.65, lng: 21.05, pct: 6, type: 'mine'},
+                    {name: 'Lebedinsky GOK (Metalloinvest)', country: '러시아', lat: 51.34, lng: 37.56, pct: 22, type: 'mine'},
+                    {name: 'Mikhailovsky GOK', country: '러시아', lat: 52.04, lng: 35.38, pct: 18, type: 'mine'},
+                    {name: 'Stoilensky GOK (NLMK)', country: '러시아', lat: 50.97, lng: 37.42, pct: 18, type: 'mine'},
+                    {name: 'Kovdor GOK', country: '러시아', lat: 67.57, lng: 30.43, pct: 7, type: 'mine'},
+                    {name: 'ArcelorMittal Kryvyi Rih', country: '우크라이나', lat: 47.91, lng: 33.35, pct: 19, type: 'mine'},
+                    {name: 'Metinvest Kryvyi Rih', country: '우크라이나', lat: 47.90, lng: 33.40, pct: 15, type: 'mine'},
+                    {name: 'Sishen Mine (Kumba)', country: '남아공', lat: -27.79, lng: 22.99, pct: 28, type: 'mine'},
+                    {name: 'Kolomela Mine (Kumba)', country: '남아공', lat: -29.07, lng: 22.85, pct: 10, type: 'mine'},
+                    {name: 'IOC Carol Lake', country: '캐나다', lat: 52.94, lng: -66.91, pct: 23, type: 'mine'},
+                    {name: 'Mont-Wright (AM Mining Canada)', country: '캐나다', lat: 52.79, lng: -67.35, pct: 26, type: 'mine'},
+                    {name: 'Bloom Lake (Champion Iron)', country: '캐나다', lat: 52.81, lng: -67.28, pct: 15, type: 'mine'},
+                    {name: 'Minntac (US Steel)', country: '미국', lat: 47.53, lng: -92.64, pct: 15, type: 'mine'},
+                    {name: 'Hibbing Taconite', country: '미국', lat: 47.43, lng: -92.96, pct: 8, type: 'mine'},
+                    {name: 'Bailadila (NMDC)', country: '인도', lat: 18.66, lng: 81.25, pct: 35, type: 'mine'},
+                    {name: 'Noamundi (Tata Steel, 1925~)', country: '인도', lat: 22.16, lng: 85.49, pct: 10, type: 'mine'},
+                    {name: 'SSGPO (ERG)', country: '카자흐스탄', lat: 53.20, lng: 63.72, pct: 8, type: 'mine'},
+                    {name: 'Zouérat (SNIM)', country: '모리타니아', lat: 22.75, lng: -12.47, pct: 13, type: 'mine'},
+                    {name: 'Marcona (Shougang)', country: '페루', lat: -15.35, lng: -75.12, pct: 20, type: 'mine'},
+                    {name: 'Simandou (2026 개시)', country: '기니', lat: 8.57, lng: -8.92, pct: 10, type: 'mine'},
+                    {name: 'Panzhihua (V·Ti 자철석)', country: '중국', lat: 26.58, lng: 101.72, pct: 10, type: 'mine'},
+                    {name: 'Anshan (Ansteel)', country: '중국', lat: 41.08, lng: 122.99, pct: 15, type: 'mine'},
+                    {name: 'Cleveland Ironstone (폐광 1964)', country: '영국', lat: 54.55, lng: -1.14, pct: 0, type: 'mine'},
+                    {name: 'Cornwall Mine (폐광 1973)', country: '미국', lat: 40.27, lng: -76.42, pct: 0, type: 'mine'},
+                    {name: 'Iron Mountain (폐광 1966)', country: '미국', lat: 37.73, lng: -90.63, pct: 0, type: 'mine'},
+                    {name: 'Siegerland (폐광, 2500년)', country: '독일', lat: 50.87, lng: 8.03, pct: 0, type: 'mine'}
                 ],
                 properties: {
                     density: '7.87 g/cm³', meltingPoint: '1,538°C', tensileStrength: '~400 MPa',
@@ -837,16 +1340,101 @@
                 id: 'carbon-steel', name: '탄소강', nameEn: 'Carbon Steel', symbol: 'Fe+C', category: 'ferrous',
                 ore: {name: '적철석(Fe₂O₃)', type: '산화광물 → 합금'},
                 locations: [
-                    {name: 'Pilbara - Mount Whaleback', country: '호주', lat: -23.37, lng: 119.67, pct: 37, type: 'mine'},
-                    {name: 'Carajás S11D', country: '브라질', lat: -6.41, lng: -50.00, pct: 17, type: 'mine'},
-                    {name: 'Kiruna Mine (LKAB)', country: '스웨덴', lat: 67.86, lng: 20.22, pct: 5, type: 'mine'},
-                    {name: 'Kryvyi Rih 철광 지구', country: '우크라이나', lat: 47.91, lng: 33.35, pct: 3, type: 'mine'},
-                    {name: 'Magnitogorsk 제철소', country: '러시아', lat: 53.39, lng: 59.04, pct: 4, type: 'smelter'},
-                    {name: 'Port Talbot 제철소', country: '영국 웨일스', lat: 51.59, lng: -3.77, pct: 2, type: 'smelter'},
-                    {name: 'Shagang 그룹 (장자강)', country: '중국', lat: 31.87, lng: 120.56, pct: 14, type: 'smelter'},
-                    {name: '허베이 탕산제철', country: '중국', lat: 39.63, lng: 118.18, pct: 10, type: 'smelter'},
-                    {name: 'POSCO 포항제철', country: '한국', lat: 36.01, lng: 129.37, pct: 4, type: 'smelter'},
-                    {name: 'Nippon Steel 기미츠', country: '일본', lat: 35.35, lng: 139.85, pct: 3, type: 'smelter'}
+                    {name: 'Shagang Zhangjiagang (세계 최대 단일)', country: '중국', lat: 31.87, lng: 120.56, pct: 30, type: 'smelter'},
+                    {name: 'POSCO 광양 (No.1 6,000m³)', country: '한국', lat: 34.92, lng: 127.7, pct: 23, type: 'smelter'},
+                    {name: 'POSCO 포항 (1973~, Finex)', country: '한국', lat: 36.01, lng: 129.37, pct: 18, type: 'smelter'},
+                    {name: 'Shougang Jingtang Caofeidian', country: '중국', lat: 39.22, lng: 118.47, pct: 20, type: 'smelter'},
+                    {name: 'Baosteel Baoshan (Baowu)', country: '중국', lat: 31.38, lng: 121.59, pct: 14, type: 'smelter'},
+                    {name: 'Baowu Zhanjiang (H₂-DRI)', country: '중국', lat: 21.16, lng: 110.41, pct: 10, type: 'smelter'},
+                    {name: 'Baowu Wuhan (WISCO)', country: '중국', lat: 30.63, lng: 114.4, pct: 15, type: 'smelter'},
+                    {name: 'Ansteel Anshan (1918~)', country: '중국', lat: 41.08, lng: 122.99, pct: 25, type: 'smelter'},
+                    {name: 'Bengang Benxi', country: '중국', lat: 41.3, lng: 123.77, pct: 15, type: 'smelter'},
+                    {name: 'Tangsteel (HBIS)', country: '중국', lat: 39.63, lng: 118.17, pct: 15, type: 'smelter'},
+                    {name: 'Handan Steel (HBIS)', country: '중국', lat: 36.63, lng: 114.55, pct: 13, type: 'smelter'},
+                    {name: '현대제철 당진', country: '한국', lat: 36.97, lng: 126.82, pct: 12, type: 'smelter'},
+                    {name: '현대제철 인천', country: '한국', lat: 37.47, lng: 126.64, pct: 3, type: 'smelter'},
+                    {name: '동국제강 포항', country: '한국', lat: 36.01, lng: 129.42, pct: 3, type: 'smelter'},
+                    {name: 'SeAH Besteel 군산', country: '한국', lat: 35.99, lng: 126.73, pct: 3, type: 'smelter'},
+                    {name: 'Nippon Steel Kimitsu', country: '일본', lat: 35.34, lng: 139.93, pct: 9, type: 'smelter'},
+                    {name: 'Nippon Steel Nagoya', country: '일본', lat: 35.08, lng: 136.82, pct: 8, type: 'smelter'},
+                    {name: 'Nippon Steel Yawata (1901~)', country: '일본', lat: 33.87, lng: 130.79, pct: 7, type: 'smelter'},
+                    {name: 'Nippon Steel Kashima', country: '일본', lat: 35.92, lng: 140.71, pct: 9, type: 'smelter'},
+                    {name: 'Nippon Steel Muroran', country: '일본', lat: 42.39, lng: 140.96, pct: 3, type: 'smelter'},
+                    {name: 'JFE Fukuyama (일본 최대)', country: '일본', lat: 34.47, lng: 133.42, pct: 12, type: 'smelter'},
+                    {name: 'JFE Kurashiki', country: '일본', lat: 34.51, lng: 133.84, pct: 8, type: 'smelter'},
+                    {name: 'JFE Chiba', country: '일본', lat: 35.61, lng: 140.1, pct: 6, type: 'smelter'},
+                    {name: 'Kobe Steel Kakogawa', country: '일본', lat: 34.75, lng: 134.82, pct: 5, type: 'smelter'},
+                    {name: 'Tata Steel Jamshedpur (1907~)', country: '인도', lat: 22.8, lng: 86.18, pct: 11, type: 'smelter'},
+                    {name: 'Tata Steel Kalinganagar', country: '인도', lat: 21.0, lng: 85.88, pct: 8, type: 'smelter'},
+                    {name: 'JSW Vijayanagar (인도 최대)', country: '인도', lat: 15.16, lng: 76.68, pct: 17, type: 'smelter'},
+                    {name: 'JSW Dolvi', country: '인도', lat: 18.69, lng: 72.98, pct: 10, type: 'smelter'},
+                    {name: 'SAIL Bhilai (레일)', country: '인도', lat: 21.21, lng: 81.38, pct: 7, type: 'smelter'},
+                    {name: 'SAIL Bokaro', country: '인도', lat: 23.65, lng: 86.15, pct: 4, type: 'smelter'},
+                    {name: 'SAIL Rourkela', country: '인도', lat: 22.25, lng: 84.88, pct: 4, type: 'smelter'},
+                    {name: 'AMNS Hazira', country: '인도', lat: 21.11, lng: 72.65, pct: 9, type: 'smelter'},
+                    {name: 'RINL Visakhapatnam', country: '인도', lat: 17.79, lng: 83.29, pct: 7, type: 'smelter'},
+                    {name: 'Formosa Ha Tinh', country: '베트남', lat: 18.07, lng: 106.43, pct: 13, type: 'smelter'},
+                    {name: 'Hoa Phat Dung Quat', country: '베트남', lat: 15.34, lng: 108.81, pct: 8, type: 'smelter'},
+                    {name: 'PT Krakatau POSCO', country: '인도네시아', lat: -5.99, lng: 106.01, pct: 3, type: 'smelter'},
+                    {name: 'ThyssenKrupp Duisburg (1891~)', country: '독일', lat: 51.42, lng: 6.75, pct: 11, type: 'smelter'},
+                    {name: 'Salzgitter AG', country: '독일', lat: 52.15, lng: 10.37, pct: 5, type: 'smelter'},
+                    {name: 'Dillinger Hütte (1685~)', country: '독일', lat: 49.37, lng: 6.72, pct: 3, type: 'smelter'},
+                    {name: 'HKM Duisburg', country: '독일', lat: 51.41, lng: 6.71, pct: 5, type: 'smelter'},
+                    {name: 'ArcelorMittal Dunkerque', country: '프랑스', lat: 51.02, lng: 2.23, pct: 7, type: 'smelter'},
+                    {name: 'ArcelorMittal Fos-sur-Mer', country: '프랑스', lat: 43.44, lng: 4.88, pct: 5, type: 'smelter'},
+                    {name: 'ArcelorMittal Ghent (Steelanol)', country: '벨기에', lat: 51.27, lng: 3.79, pct: 5, type: 'smelter'},
+                    {name: 'Tata Steel IJmuiden (HIsarna)', country: '네덜란드', lat: 52.47, lng: 4.6, pct: 7, type: 'smelter'},
+                    {name: 'Voestalpine Linz (1952 LD)', country: '오스트리아', lat: 48.3, lng: 14.33, pct: 6, type: 'smelter'},
+                    {name: 'SSAB Luleå (HYBRIT)', country: '스웨덴', lat: 65.58, lng: 22.15, pct: 3, type: 'smelter'},
+                    {name: 'SSAB Oxelösund', country: '스웨덴', lat: 58.67, lng: 17.1, pct: 2, type: 'smelter'},
+                    {name: 'SSAB Raahe', country: '핀란드', lat: 64.7, lng: 24.48, pct: 3, type: 'smelter'},
+                    {name: 'Stegra (H2 Green Steel)', country: '스웨덴', lat: 65.82, lng: 21.69, pct: 3, type: 'smelter'},
+                    {name: 'Acciaierie Italia Taranto', country: '이탈리아', lat: 40.5, lng: 17.18, pct: 3, type: 'smelter'},
+                    {name: 'AM Asturias Gijón', country: '스페인', lat: 43.54, lng: -5.66, pct: 5, type: 'smelter'},
+                    {name: 'Tata Steel Port Talbot (2024.9 폐쇄)', country: '영국', lat: 51.59, lng: -3.77, pct: 2, type: 'smelter'},
+                    {name: 'British Steel Scunthorpe', country: '영국', lat: 53.59, lng: -0.66, pct: 3, type: 'smelter'},
+                    {name: 'MMK Magnitogorsk (1932~)', country: '러시아', lat: 53.39, lng: 59.04, pct: 15, type: 'smelter'},
+                    {name: 'NLMK Lipetsk (전기강판 1위)', country: '러시아', lat: 52.59, lng: 39.64, pct: 14, type: 'smelter'},
+                    {name: 'Severstal Cherepovets', country: '러시아', lat: 59.16, lng: 37.98, pct: 11, type: 'smelter'},
+                    {name: 'Evraz NTMK Nizhny Tagil', country: '러시아', lat: 57.92, lng: 60.0, pct: 5, type: 'smelter'},
+                    {name: 'Azovstal (2022 파괴)', country: '우크라이나', lat: 47.1, lng: 37.62, pct: 0, type: 'smelter'},
+                    {name: 'Ilyich Mariupol (2022 파손)', country: '우크라이나', lat: 47.14, lng: 37.51, pct: 0, type: 'smelter'},
+                    {name: 'AM Kryvyi Rih', country: '우크라이나', lat: 47.91, lng: 33.35, pct: 2, type: 'smelter'},
+                    {name: 'Erdemir Ereğli (OYAK)', country: '튀르키예', lat: 41.3, lng: 31.42, pct: 9, type: 'smelter'},
+                    {name: 'Isdemir Iskenderun', country: '튀르키예', lat: 36.69, lng: 36.17, pct: 5, type: 'smelter'},
+                    {name: 'Mobarakeh Steel (MSC)', country: '이란', lat: 32.36, lng: 51.51, pct: 7, type: 'smelter'},
+                    {name: 'Hadeed Al-Jubail (SABIC)', country: '사우디아라비아', lat: 27.01, lng: 49.66, pct: 7, type: 'smelter'},
+                    {name: 'Ezz Steel Ain Sokhna', country: '이집트', lat: 29.6, lng: 32.33, pct: 7, type: 'smelter'},
+                    {name: 'AMSA Vanderbijlpark', country: '남아공', lat: -26.7, lng: 27.84, pct: 5, type: 'smelter'},
+                    {name: 'US Steel Gary Works (1906~)', country: '미국', lat: 41.62, lng: -87.34, pct: 8, type: 'smelter'},
+                    {name: 'US Steel Mon Valley', country: '미국', lat: 40.39, lng: -79.86, pct: 3, type: 'smelter'},
+                    {name: 'US Steel Big River Steel', country: '미국', lat: 35.93, lng: -89.9, pct: 6, type: 'smelter'},
+                    {name: 'Cliffs Indiana Harbor', country: '미국', lat: 41.64, lng: -87.45, pct: 5, type: 'smelter'},
+                    {name: 'Cliffs Burns Harbor', country: '미국', lat: 41.63, lng: -87.14, pct: 5, type: 'smelter'},
+                    {name: 'Cliffs Dearborn (Ford Rouge)', country: '미국', lat: 42.3, lng: -83.17, pct: 2, type: 'smelter'},
+                    {name: 'Nucor Crawfordsville (1989)', country: '미국', lat: 40.06, lng: -86.93, pct: 3, type: 'smelter'},
+                    {name: 'Nucor Arkansas', country: '미국', lat: 35.93, lng: -89.89, pct: 4, type: 'smelter'},
+                    {name: 'Nucor Brandenburg (2023~)', country: '미국', lat: 37.85, lng: -86.17, pct: 2, type: 'smelter'},
+                    {name: 'SDI Sinton Texas', country: '미국', lat: 28.04, lng: -97.51, pct: 3, type: 'smelter'},
+                    {name: 'AM/NS Calvert', country: '미국', lat: 31.08, lng: -87.82, pct: 5, type: 'smelter'},
+                    {name: 'AM Lázaro Cárdenas', country: '멕시코', lat: 17.94, lng: -102.23, pct: 5, type: 'smelter'},
+                    {name: 'Ternium Pesquería', country: '멕시코', lat: 25.77, lng: -100.04, pct: 4, type: 'smelter'},
+                    {name: 'Stelco Hamilton', country: '캐나다', lat: 43.27, lng: -79.83, pct: 2, type: 'smelter'},
+                    {name: 'Algoma Steel', country: '캐나다', lat: 46.52, lng: -84.35, pct: 3, type: 'smelter'},
+                    {name: 'AM Dofasco', country: '캐나다', lat: 43.26, lng: -79.78, pct: 4, type: 'smelter'},
+                    {name: 'CSN Volta Redonda (1941)', country: '브라질', lat: -22.52, lng: -44.1, pct: 6, type: 'smelter'},
+                    {name: 'Usiminas Ipatinga', country: '브라질', lat: -19.48, lng: -42.54, pct: 4, type: 'smelter'},
+                    {name: 'Gerdau Açominas', country: '브라질', lat: -20.49, lng: -43.69, pct: 8, type: 'smelter'},
+                    {name: 'AM Tubarão', country: '브라질', lat: -20.25, lng: -40.24, pct: 7, type: 'smelter'},
+                    {name: 'Ternium Brasil CSA', country: '브라질', lat: -22.93, lng: -43.65, pct: 5, type: 'smelter'},
+                    {name: 'Ternium Siderar', country: '아르헨티나', lat: -33.34, lng: -60.22, pct: 3, type: 'smelter'},
+                    {name: 'Sparrows Point (폐쇄 2012)', country: '미국', lat: 39.22, lng: -76.48, pct: 0, type: 'smelter'},
+                    {name: 'Bethlehem Steel (폐쇄 1995)', country: '미국', lat: 40.61, lng: -75.38, pct: 0, type: 'smelter'},
+                    {name: 'Homestead Works (폐쇄 1986)', country: '미국', lat: 40.41, lng: -79.91, pct: 0, type: 'smelter'},
+                    {name: 'Völklinger Hütte (UNESCO)', country: '독일', lat: 49.25, lng: 6.84, pct: 0, type: 'smelter'},
+                    {name: 'Coalbrookdale (1709 코크스)', country: '영국', lat: 52.64, lng: -2.49, pct: 0, type: 'smelter'},
+                    {name: 'Consett Ironworks (폐쇄 1980)', country: '영국', lat: 54.86, lng: -1.84, pct: 0, type: 'smelter'},
+                    {name: 'Redcar Teesside (폐쇄 2015)', country: '영국', lat: 54.61, lng: -1.08, pct: 0, type: 'smelter'}
                 ],
                 properties: {
                     density: '7.85 g/cm³', meltingPoint: '1,370-1,510°C', tensileStrength: '400-2,500 MPa',
@@ -862,11 +1450,40 @@
                 id: 'alloy-steel', name: '합금강', nameEn: 'Alloy Steel', symbol: 'Fe合', category: 'ferrous',
                 ore: {name: '적철석 + Cr/Ni/Mo 광석', type: '산화광물 + 합금원소'},
                 locations: [
-                    {name: '바오산강철 (Baosteel)', country: '중국', lat: 31.38, lng: 121.59, pct: 50, type: 'smelter'},
-                    {name: 'Tata Steel Jamshedpur', country: '인도', lat: 22.80, lng: 86.18, pct: 7, type: 'smelter'},
-                    {name: 'Nippon Steel 나고야', country: '일본', lat: 35.05, lng: 136.83, pct: 5, type: 'smelter'},
-                    {name: 'ThyssenKrupp Duisburg', country: '독일', lat: 51.42, lng: 6.75, pct: 4, type: 'smelter'},
-                    {name: 'ArcelorMittal Ghent', country: '벨기에', lat: 51.27, lng: 3.79, pct: 3, type: 'smelter'}
+                    {name: 'Baosteel Baoshan (자동차강판)', country: '중국', lat: 31.38, lng: 121.59, pct: 14, type: 'smelter'},
+                    {name: 'Baowu Wuhan (전기강판)', country: '중국', lat: 30.63, lng: 114.4, pct: 15, type: 'smelter'},
+                    {name: 'Baowu Masteel', country: '중국', lat: 31.7, lng: 118.5, pct: 20, type: 'smelter'},
+                    {name: 'Ansteel Anshan', country: '중국', lat: 41.08, lng: 122.99, pct: 12, type: 'smelter'},
+                    {name: 'Pansteel Panzhihua (V·Ti)', country: '중국', lat: 26.58, lng: 101.72, pct: 10, type: 'smelter'},
+                    {name: 'POSCO 광양 (기가스틸)', country: '한국', lat: 34.92, lng: 127.7, pct: 18, type: 'smelter'},
+                    {name: 'POSCO 포항 (특수강)', country: '한국', lat: 36.01, lng: 129.37, pct: 12, type: 'smelter'},
+                    {name: '현대제철 당진', country: '한국', lat: 36.97, lng: 126.82, pct: 10, type: 'smelter'},
+                    {name: 'SeAH Besteel 군산', country: '한국', lat: 35.99, lng: 126.73, pct: 3, type: 'smelter'},
+                    {name: 'Nippon Steel Nagoya', country: '일본', lat: 35.08, lng: 136.82, pct: 7, type: 'smelter'},
+                    {name: 'Nippon Steel Kimitsu', country: '일본', lat: 35.34, lng: 139.93, pct: 8, type: 'smelter'},
+                    {name: 'Nippon Steel Muroran', country: '일본', lat: 42.39, lng: 140.96, pct: 3, type: 'smelter'},
+                    {name: 'Nippon Steel Hirohata (GOES)', country: '일본', lat: 34.81, lng: 134.62, pct: 3, type: 'smelter'},
+                    {name: 'Nippon Steel Wakayama (OCTG)', country: '일본', lat: 34.16, lng: 135.16, pct: 3, type: 'smelter'},
+                    {name: 'JFE Fukuyama', country: '일본', lat: 34.47, lng: 133.42, pct: 8, type: 'smelter'},
+                    {name: 'JFE Chiba', country: '일본', lat: 35.61, lng: 140.1, pct: 4, type: 'smelter'},
+                    {name: 'Kobe Steel Kakogawa', country: '일본', lat: 34.75, lng: 134.82, pct: 4, type: 'smelter'},
+                    {name: 'Tata Steel Jamshedpur', country: '인도', lat: 22.8, lng: 86.18, pct: 7, type: 'smelter'},
+                    {name: 'JSW Vijayanagar', country: '인도', lat: 15.16, lng: 76.68, pct: 7, type: 'smelter'},
+                    {name: 'JSPL Angul', country: '인도', lat: 21.0, lng: 85.22, pct: 4, type: 'smelter'},
+                    {name: 'SAIL Bhilai (레일)', country: '인도', lat: 21.21, lng: 81.38, pct: 5, type: 'smelter'},
+                    {name: 'ThyssenKrupp Duisburg', country: '독일', lat: 51.42, lng: 6.75, pct: 8, type: 'smelter'},
+                    {name: 'Salzgitter AG (SALCOS)', country: '독일', lat: 52.15, lng: 10.37, pct: 4, type: 'smelter'},
+                    {name: 'Dillinger Hütte (초두께)', country: '독일', lat: 49.37, lng: 6.72, pct: 3, type: 'smelter'},
+                    {name: 'ArcelorMittal Ghent', country: '벨기에', lat: 51.27, lng: 3.79, pct: 3, type: 'smelter'},
+                    {name: 'Tata Steel IJmuiden', country: '네덜란드', lat: 52.47, lng: 4.6, pct: 4, type: 'smelter'},
+                    {name: 'Voestalpine Linz', country: '오스트리아', lat: 48.3, lng: 14.33, pct: 4, type: 'smelter'},
+                    {name: 'Voestalpine Donawitz (레일)', country: '오스트리아', lat: 47.38, lng: 15.09, pct: 2, type: 'smelter'},
+                    {name: 'NLMK Lipetsk', country: '러시아', lat: 52.59, lng: 39.64, pct: 10, type: 'smelter'},
+                    {name: 'Severstal Cherepovets', country: '러시아', lat: 59.16, lng: 37.98, pct: 7, type: 'smelter'},
+                    {name: 'Evraz NTMK (레일)', country: '러시아', lat: 57.92, lng: 60.0, pct: 5, type: 'smelter'},
+                    {name: 'US Steel Big River', country: '미국', lat: 35.93, lng: -89.9, pct: 4, type: 'smelter'},
+                    {name: 'Cliffs AK Steel Middletown', country: '미국', lat: 39.51, lng: -84.38, pct: 3, type: 'smelter'},
+                    {name: 'Nucor Brandenburg', country: '미국', lat: 37.85, lng: -86.17, pct: 2, type: 'smelter'}
                 ],
                 properties: {
                     density: '7.7-8.0 g/cm³', meltingPoint: '1,370-1,480°C', tensileStrength: '500-2,000 MPa',
@@ -882,11 +1499,22 @@
                 id: 'stainless', name: '스테인리스강', nameEn: 'Stainless Steel', symbol: 'STS', category: 'ferrous',
                 ore: {name: '크롬철석(FeCr₂O₄) + 니켈광', type: '산화광물 + 합금'},
                 locations: [
-                    {name: 'Tsingshan 칭산', country: '중국', lat: 27.78, lng: 120.65, pct: 57, type: 'smelter'},
-                    {name: 'Jindal Stainless', country: '인도', lat: 21.50, lng: 86.07, pct: 6, type: 'smelter'},
+                    {name: 'Tsingshan 칭산 (세계 1위)', country: '중국', lat: 27.78, lng: 120.65, pct: 57, type: 'smelter'},
+                    {name: 'TISCO Taiyuan (STS 세계 최대)', country: '중국', lat: 37.87, lng: 112.55, pct: 11, type: 'smelter'},
+                    {name: 'Jindal Stainless Jajpur', country: '인도', lat: 21.5, lng: 86.07, pct: 6, type: 'smelter'},
                     {name: 'POSCO STS 포항', country: '한국', lat: 36.01, lng: 129.37, pct: 5, type: 'smelter'},
-                    {name: 'Outokumpu Tornio', country: '핀란드', lat: 65.85, lng: 24.14, pct: 4, type: 'smelter'},
-                    {name: 'Acerinox Algeciras', country: '스페인', lat: 36.13, lng: -5.45, pct: 3, type: 'smelter'}
+                    {name: 'POSCO STS 광양', country: '한국', lat: 34.92, lng: 127.7, pct: 3, type: 'smelter'},
+                    {name: '현대비앤지스틸 창원', country: '한국', lat: 35.24, lng: 128.66, pct: 1, type: 'smelter'},
+                    {name: 'Nippon Steel STS Hikari', country: '일본', lat: 33.97, lng: 131.94, pct: 3, type: 'smelter'},
+                    {name: 'Outokumpu Tornio (유럽 최대)', country: '핀란드', lat: 65.85, lng: 24.14, pct: 4, type: 'smelter'},
+                    {name: 'Outokumpu Avesta', country: '스웨덴', lat: 60.14, lng: 16.17, pct: 2, type: 'smelter'},
+                    {name: 'Acerinox Algeciras', country: '스페인', lat: 36.13, lng: -5.45, pct: 3, type: 'smelter'},
+                    {name: 'Aperam Genk', country: '벨기에', lat: 50.97, lng: 5.5, pct: 2, type: 'smelter'},
+                    {name: 'ThyssenKrupp Terni', country: '이탈리아', lat: 42.56, lng: 12.64, pct: 2, type: 'smelter'},
+                    {name: 'Tsingshan IMIP Morowali', country: '인도네시아', lat: -2.87, lng: 121.64, pct: 4, type: 'smelter'},
+                    {name: 'NAS Cliffs 켄터키', country: '미국', lat: 38.51, lng: -85.02, pct: 3, type: 'smelter'},
+                    {name: 'Outokumpu Calvert', country: '미국', lat: 31.16, lng: -88.07, pct: 1, type: 'smelter'},
+                    {name: 'SAIL Salem Steel', country: '인도', lat: 11.65, lng: 78.15, pct: 1, type: 'smelter'}
                 ],
                 properties: {
                     density: '7.7-8.0 g/cm³', meltingPoint: '1,400-1,450°C', tensileStrength: '515-1,380 MPa',
@@ -904,8 +1532,16 @@
                 locations: [
                     {name: '허베이 주조단지', country: '중국', lat: 37.86, lng: 114.53, pct: 55, type: 'smelter'},
                     {name: 'Kirloskar Kolhapur', country: '인도', lat: 16.69, lng: 74.23, pct: 8, type: 'smelter'},
+                    {name: 'Tata Metaliks Kharagpur', country: '인도', lat: 22.34, lng: 87.33, pct: 3, type: 'smelter'},
                     {name: 'Chelyabinsk Foundry', country: '러시아', lat: 55.15, lng: 61.43, pct: 5, type: 'smelter'},
-                    {name: 'Georg Fischer Schaffhausen', country: '스위스', lat: 47.70, lng: 8.63, pct: 3, type: 'smelter'}
+                    {name: 'Georg Fischer (1802~)', country: '스위스', lat: 47.7, lng: 8.63, pct: 3, type: 'smelter'},
+                    {name: 'Waupaca Foundry (세계 최대)', country: '미국', lat: 44.36, lng: -89.08, pct: 4, type: 'smelter'},
+                    {name: 'Grede Foundries', country: '미국', lat: 43.04, lng: -87.92, pct: 2, type: 'smelter'},
+                    {name: 'Tupy S.A. Joinville', country: '브라질', lat: -26.3, lng: -48.85, pct: 3, type: 'smelter'},
+                    {name: 'Kubota Hanshin (덕타일)', country: '일본', lat: 34.77, lng: 135.31, pct: 3, type: 'smelter'},
+                    {name: 'Coalbrookdale (1709)', country: '영국', lat: 52.64, lng: -2.49, pct: 0, type: 'smelter'},
+                    {name: 'Carron Ironworks (1759~1982)', country: '영국', lat: 56.02, lng: -3.8, pct: 0, type: 'smelter'},
+                    {name: 'Le Creusot Schneider', country: '프랑스', lat: 46.8, lng: 4.44, pct: 1, type: 'smelter'}
                 ],
                 properties: {
                     density: '6.8-7.8 g/cm³', meltingPoint: '1,150-1,300°C', tensileStrength: '100-900 MPa',
@@ -921,10 +1557,20 @@
                 id: 'tool-steel', name: '공구강', nameEn: 'Tool Steel', symbol: 'SKD', category: 'ferrous',
                 ore: {name: '적철석 + W/Cr/V 광석', type: '산화광물 + 합금원소'},
                 locations: [
-                    {name: 'Böhler Kapfenberg', country: '오스트리아', lat: 47.44, lng: 15.29, pct: 15, type: 'smelter'},
+                    {name: 'Böhler Kapfenberg (voestalpine)', country: '오스트리아', lat: 47.44, lng: 15.29, pct: 15, type: 'smelter'},
                     {name: 'Uddeholm Hagfors', country: '스웨덴', lat: 60.03, lng: 13.66, pct: 12, type: 'smelter'},
-                    {name: 'Hitachi Metals Yasugi', country: '일본', lat: 35.43, lng: 133.25, pct: 15, type: 'smelter'},
-                    {name: 'Crucible Industries Syracuse', country: '미국', lat: 43.05, lng: -76.15, pct: 5, type: 'smelter'}
+                    {name: 'Ovako Hofors', country: '스웨덴', lat: 60.55, lng: 16.29, pct: 3, type: 'smelter'},
+                    {name: 'Hitachi Metals Yasugi (YSS)', country: '일본', lat: 35.43, lng: 133.25, pct: 15, type: 'smelter'},
+                    {name: 'Daido Steel Nagoya', country: '일본', lat: 35.17, lng: 136.88, pct: 6, type: 'smelter'},
+                    {name: 'Aichi Steel Tokai', country: '일본', lat: 35.02, lng: 136.87, pct: 4, type: 'smelter'},
+                    {name: 'Sanyo Special Steel Himeji', country: '일본', lat: 34.83, lng: 134.69, pct: 3, type: 'smelter'},
+                    {name: 'POSCO 특수강 포항', country: '한국', lat: 36.01, lng: 129.37, pct: 3, type: 'smelter'},
+                    {name: 'SeAH 창원특수강', country: '한국', lat: 35.24, lng: 128.66, pct: 4, type: 'smelter'},
+                    {name: 'Crucible Industries Syracuse', country: '미국', lat: 43.05, lng: -76.15, pct: 5, type: 'smelter'},
+                    {name: 'Carpenter Technology Reading', country: '미국', lat: 40.34, lng: -75.93, pct: 4, type: 'smelter'},
+                    {name: 'Ellwood City Forge', country: '미국', lat: 40.86, lng: -80.29, pct: 2, type: 'smelter'},
+                    {name: 'Erasteel Söderfors (HSS)', country: '스웨덴', lat: 60.38, lng: 17.23, pct: 2, type: 'smelter'},
+                    {name: '중국 특수강 다수', country: '중국', lat: 31.38, lng: 121.59, pct: 25, type: 'smelter'}
                 ],
                 properties: {
                     density: '7.7-8.0 g/cm³', meltingPoint: '1,350-1,450°C', tensileStrength: '700-2,500 MPa',
@@ -940,16 +1586,75 @@
                 id: 'cu', name: '구리', nameEn: 'Copper', symbol: 'Cu', category: 'heavy',
                 ore: {name: '황동석(CuFeS₂)', type: '황화광물'},
                 locations: [
-                    {name: 'Chuquicamata 노천/지하광산', country: '칠레 아타카마', lat: -22.29, lng: -68.90, pct: 8, type: 'mine'},
-                    {name: 'Escondida Mine', country: '칠레', lat: -24.27, lng: -69.07, pct: 27, type: 'mine'},
-                    {name: 'Cerro Verde Mine', country: '페루', lat: -16.54, lng: -71.60, pct: 11, type: 'mine'},
-                    {name: 'Kamoa-Kakula Mine', country: '콩고 DRC', lat: -10.77, lng: 26.50, pct: 8, type: 'mine'},
-                    {name: 'Grasberg Mine (해발 4,000m)', country: '인도네시아 파푸아', lat: -4.05, lng: 137.12, pct: 5, type: 'mine'},
-                    {name: 'Oyu Tolgoi Mine', country: '몽골', lat: 43.00, lng: 106.85, pct: 3, type: 'mine'},
-                    {name: 'Bingham Canyon Mine', country: '미국 유타', lat: 40.52, lng: -112.15, pct: 2, type: 'mine'},
-                    {name: 'Chuquicamata 제련·전해정련소', country: '칠레 칼라마', lat: -22.46, lng: -68.93, pct: 5, type: 'smelter'},
-                    {name: 'Swansea 역사적 구리 제련 유적', country: '영국 웨일스', lat: 51.62, lng: -3.94, pct: 0, type: 'smelter'},
-                    {name: 'Hinkley Point C 원전 (구리 터빈)', country: '영국 서머싯', lat: 51.21, lng: -3.13, pct: 0, type: 'refinery'}
+                    {name: 'Escondida (세계 1위)', country: '칠레', lat: -24.27, lng: -69.07, pct: 128, type: 'mine'},
+                    {name: 'Collahuasi', country: '칠레', lat: -20.97, lng: -68.72, pct: 61, type: 'mine'},
+                    {name: 'Chuquicamata (Codelco)', country: '칠레', lat: -22.29, lng: -68.9, pct: 30, type: 'mine'},
+                    {name: 'El Teniente (지하광 최대)', country: '칠레', lat: -34.08, lng: -70.38, pct: 37, type: 'mine'},
+                    {name: 'Los Bronces (Anglo)', country: '칠레', lat: -33.15, lng: -70.3, pct: 23, type: 'mine'},
+                    {name: 'Los Pelambres', country: '칠레', lat: -31.72, lng: -70.48, pct: 30, type: 'mine'},
+                    {name: 'Radomiro Tomic (Codelco)', country: '칠레', lat: -22.18, lng: -68.92, pct: 23, type: 'mine'},
+                    {name: 'Cerro Verde (Freeport)', country: '페루', lat: -16.54, lng: -71.6, pct: 44, type: 'mine'},
+                    {name: 'Antamina', country: '페루', lat: -9.56, lng: -77.05, pct: 45, type: 'mine'},
+                    {name: 'Las Bambas (MMG)', country: '페루', lat: -14.08, lng: -72.3, pct: 30, type: 'mine'},
+                    {name: 'Toquepala (Southern)', country: '페루', lat: -17.22, lng: -70.6, pct: 20, type: 'mine'},
+                    {name: 'Cuajone (Southern)', country: '페루', lat: -17.03, lng: -70.72, pct: 16, type: 'mine'},
+                    {name: 'Kamoa-Kakula (Cu 6-8%)', country: 'DR콩고', lat: -10.77, lng: 26.5, pct: 43, type: 'mine'},
+                    {name: 'Tenke Fungurume (CMOC)', country: 'DR콩고', lat: -10.62, lng: 26.12, pct: 22, type: 'mine'},
+                    {name: 'Mutanda (Glencore)', country: 'DR콩고', lat: -10.93, lng: 25.95, pct: 10, type: 'mine'},
+                    {name: 'Kolwezi KCC (Glencore)', country: 'DR콩고', lat: -10.72, lng: 25.47, pct: 18, type: 'mine'},
+                    {name: 'Kansanshi (First Quantum)', country: '잠비아', lat: -12.1, lng: 26.42, pct: 18, type: 'mine'},
+                    {name: 'Konkola', country: '잠비아', lat: -12.27, lng: 27.87, pct: 6, type: 'mine'},
+                    {name: 'Lumwana (Barrick)', country: '잠비아', lat: -12.15, lng: 25.83, pct: 12, type: 'mine'},
+                    {name: 'Grasberg (Cu+Au)', country: '인도네시아', lat: -4.05, lng: 137.12, pct: 40, type: 'mine'},
+                    {name: 'Batu Hijau (Amman)', country: '인도네시아', lat: -8.97, lng: 116.87, pct: 9, type: 'mine'},
+                    {name: 'Oyu Tolgoi (Rio Tinto)', country: '몽골', lat: 43.03, lng: 107.14, pct: 35, type: 'mine'},
+                    {name: 'Erdenet Mine', country: '몽골', lat: 49.03, lng: 104.08, pct: 13, type: 'mine'},
+                    {name: 'Morenci (Freeport)', country: '미국', lat: 33.07, lng: -109.33, pct: 47, type: 'mine'},
+                    {name: 'Bingham Canyon (Rio Tinto)', country: '미국', lat: 40.52, lng: -112.15, pct: 13, type: 'mine'},
+                    {name: 'Bagdad (Freeport)', country: '미국', lat: 34.58, lng: -113.18, pct: 9, type: 'mine'},
+                    {name: 'Safford (Freeport)', country: '미국', lat: 32.94, lng: -109.6, pct: 6, type: 'mine'},
+                    {name: 'Sierrita (Freeport)', country: '미국', lat: 31.87, lng: -111.08, pct: 8, type: 'mine'},
+                    {name: 'Cananea/Buenavista', country: '멕시코', lat: 30.98, lng: -110.3, pct: 45, type: 'mine'},
+                    {name: 'Olympic Dam (BHP, Cu+U+Au)', country: '호주', lat: -30.44, lng: 136.88, pct: 20, type: 'mine'},
+                    {name: 'Cadia (Newcrest)', country: '호주', lat: -33.45, lng: 148.98, pct: 10, type: 'mine'},
+                    {name: 'Prominent Hill (OZ Minerals)', country: '호주', lat: -29.73, lng: 135.57, pct: 5, type: 'mine'},
+                    {name: 'Norilsk Nickel (Cu+Ni)', country: '러시아', lat: 69.35, lng: 88.2, pct: 42, type: 'mine'},
+                    {name: 'Udokan Copper', country: '러시아', lat: 56.67, lng: 118.1, pct: 9, type: 'mine'},
+                    {name: 'Sudbury (Vale·Glencore)', country: '캐나다', lat: 46.49, lng: -81.01, pct: 14, type: 'mine'},
+                    {name: 'Highland Valley (Teck)', country: '캐나다', lat: 50.48, lng: -121.03, pct: 10, type: 'mine'},
+                    {name: 'Aitik Mine (유럽 최대)', country: '스웨덴', lat: 67.07, lng: 20.95, pct: 7, type: 'mine'},
+                    {name: 'KGHM Polkowice·Rudna', country: '폴란드', lat: 51.49, lng: 16.05, pct: 40, type: 'mine'},
+                    {name: 'Sarcheshmeh (NICICO)', country: '이란', lat: 29.95, lng: 55.86, pct: 15, type: 'mine'},
+                    {name: 'Dexing 더싱 (Jiangxi Copper)', country: '중국', lat: 29.08, lng: 117.64, pct: 20, type: 'mine'},
+                    {name: 'Yulong 위롱 (Zijin)', country: '중국 티베트', lat: 31.47, lng: 97.86, pct: 10, type: 'mine'},
+                    {name: 'Toyo Smelter (Sumitomo)', country: '일본', lat: 33.95, lng: 133.55, pct: 15, type: 'smelter'},
+                    {name: 'Naoshima Mitsubishi Smelter', country: '일본', lat: 34.46, lng: 133.98, pct: 10, type: 'smelter'},
+                    {name: 'Saganoseki Smelter', country: '일본', lat: 33.25, lng: 131.9, pct: 8, type: 'smelter'},
+                    {name: 'LS MnM 온산제련소', country: '한국', lat: 35.42, lng: 129.35, pct: 12, type: 'smelter'},
+                    {name: '고려아연 울산', country: '한국', lat: 35.49, lng: 129.38, pct: 3, type: 'smelter'},
+                    {name: 'Jiangxi Copper Guixi', country: '중국', lat: 28.24, lng: 117.25, pct: 22, type: 'smelter'},
+                    {name: 'Tongling Copper', country: '중국', lat: 30.94, lng: 117.81, pct: 15, type: 'smelter'},
+                    {name: 'Yunnan Copper Kunming', country: '중국', lat: 25.04, lng: 102.71, pct: 13, type: 'smelter'},
+                    {name: 'Codelco Chuquicamata 정련소', country: '칠레', lat: -22.46, lng: -68.93, pct: 6, type: 'smelter'},
+                    {name: 'Codelco Ventanas 정련소', country: '칠레', lat: -32.74, lng: -71.48, pct: 4, type: 'smelter'},
+                    {name: 'Southern Copper Ilo Smelter', country: '페루', lat: -17.63, lng: -71.34, pct: 4, type: 'smelter'},
+                    {name: 'KGHM Głogów 제련소', country: '폴란드', lat: 51.66, lng: 16.09, pct: 7, type: 'smelter'},
+                    {name: 'Aurubis Hamburg (유럽 1위)', country: '독일', lat: 53.53, lng: 10.06, pct: 11, type: 'smelter'},
+                    {name: 'Aurubis Pirdop', country: '불가리아', lat: 42.7, lng: 24.18, pct: 3, type: 'smelter'},
+                    {name: 'Atlantic Copper Huelva', country: '스페인', lat: 37.26, lng: -6.95, pct: 3, type: 'smelter'},
+                    {name: 'Boliden Rönnskär', country: '스웨덴', lat: 64.71, lng: 21.18, pct: 2, type: 'smelter'},
+                    {name: 'Boliden Harjavalta', country: '핀란드', lat: 61.32, lng: 22.14, pct: 2, type: 'smelter'},
+                    {name: 'PT Smelting Gresik', country: '인도네시아', lat: -7.13, lng: 112.64, pct: 3, type: 'smelter'},
+                    {name: 'Freeport Manyar Smelter', country: '인도네시아', lat: -7.11, lng: 112.7, pct: 4, type: 'smelter'},
+                    {name: 'Hindustan Copper Khetri', country: '인도', lat: 28.0, lng: 75.78, pct: 2, type: 'smelter'},
+                    {name: 'Tsumeb Smelter', country: '나미비아', lat: -19.23, lng: 17.72, pct: 1, type: 'smelter'},
+                    {name: 'Zambia Mopani Smelter', country: '잠비아', lat: -12.82, lng: 28.21, pct: 3, type: 'smelter'},
+                    {name: 'Anglesey Parys Mountain (18C)', country: '영국', lat: 53.39, lng: -4.36, pct: 0, type: 'mine'},
+                    {name: 'Rio Tinto 원조광 (로마시대)', country: '스페인', lat: 37.7, lng: -6.57, pct: 0, type: 'mine'},
+                    {name: 'Falun Copper (1,000년 운영)', country: '스웨덴', lat: 60.6, lng: 15.63, pct: 0, type: 'mine'},
+                    {name: 'Butte Montana (한때 세계 최대)', country: '미국', lat: 46.0, lng: -112.53, pct: 0, type: 'mine'},
+                    {name: 'Calumet (미시간 자연동)', country: '미국', lat: 47.25, lng: -88.45, pct: 0, type: 'mine'},
+                    {name: 'Swansea Copperopolis', country: '영국', lat: 51.62, lng: -3.94, pct: 0, type: 'smelter'}
                 ],
                 properties: {
                     density: '8.96 g/cm³', meltingPoint: '1,085°C', tensileStrength: '200-500 MPa',
@@ -1561,333 +2266,566 @@
             }
         ];
 
-        // CATEGORY TRANSLATIONS
-        const CATEGORY_NAMES = {
-            ferrous: '철금속',
-            heavy: '비철 - 중금속',
-            light: '비철 - 경금속',
-            precious: '비철 - 귀금속',
-            rare: '희유금속/전략금속',
-            ree: '희토류 (REE)',
-            metalloid: '준금속'
-        };
 
-        // GLOBE SETUP
-        let globe, selectedMetal = null;
+// ============================================================
+// METALS ATLAS — App logic
+// ============================================================
+(function() {
+    const CATEGORY_NAMES = {
+        ferrous:   '철금속',
+        heavy:     '비철 · 중금속',
+        light:     '비철 · 경금속',
+        precious:  '비철 · 귀금속',
+        rare:      '희유 · 전략금속',
+        ree:       '희토류 (REE)',
+        metalloid: '준금속'
+    };
+    const CATEGORY_COLORS = {
+        ferrous:   'var(--cat-ferrous)',
+        heavy:     'var(--cat-heavy)',
+        light:     'var(--cat-light)',
+        precious:  'var(--cat-precious)',
+        rare:      'var(--cat-rare)',
+        ree:       'var(--cat-ree)',
+        metalloid: 'var(--cat-metalloid)'
+    };
+    const CATEGORY_HEX = {
+        ferrous:   '#8b7dff',
+        heavy:     '#ff8766',
+        light:     '#42c8a1',
+        precious:  '#ffc85a',
+        rare:      '#b583ff',
+        ree:       '#3fdbc5',
+        metalloid: '#b5b8c9'
+    };
+    const TYPE_HEX = {
+        mine:     '#ffb84d',
+        smelter:  '#ff6b6b',
+        refinery: '#a78bfa',
+        historic: '#64748b'
+    };
 
-        function initGlobe() {
-            const container = document.getElementById('globeViz');
+    const state = {
+        selectedMetal: null,
+        categoryFilter: 'all',
+        locFilter: 'all',
+        locSearch: '',
+        activeTab: 'overview',
+        layerOn: { mine: true, smelter: true, refinery: true, historic: true },
+        storyIdx: 0,
+        theme: 'dark'
+    };
 
-            globe = Globe()(container)
-                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-                .backgroundColor('#f5f5f8')
-                .showAtmosphere(true)
-                .atmosphereColor('#87ceeb')
-                .atmosphereAltitude(0.25)
-                .pointsData([])
-                .pointLat('lat')
-                .pointLng('lng')
-                .pointColor('color')
-                .pointAltitude(0.06)
-                .pointRadius(0.4)
-                .pointLabel(d => {
-                    const typeIcon = d.type === 'mine' ? '⛏️' : d.type === 'smelter' ? '🏭' : '🧪';
-                    const typeName = d.type === 'mine' ? '광산' : d.type === 'smelter' ? '제련소' : '정제소';
-                    return `<div style="background:rgba(255,255,255,0.95);padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:12px;color:#333;font-family:-apple-system,sans-serif;">
-                    <div style="font-weight:700;">${typeIcon} ${d.name}</div>
-                    <div style="color:#666;font-size:11px;">${d.country} · ${d.pct}% · ${typeName}</div>
-                </div>`;
-                })
-                .htmlElementsData([])
-                .htmlLat('lat')
-                .htmlLng('lng')
-                .htmlAltitude(0.02)
-                .htmlElement(d => {
-                    const el = document.createElement('div');
-                    const typeIcon = d.type === 'mine' ? '⛏️' : d.type === 'smelter' ? '🏭' : '🧪';
-                    el.style.cssText = 'color:' + d.color + ';font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-shadow:0 0 6px rgba(255,255,255,0.9),0 0 3px rgba(255,255,255,0.7);white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%);padding:2px 6px;background:rgba(255,255,255,0.7);border-radius:3px;';
-                    el.textContent = `${typeIcon} ${d.name}`;
-                    return el;
-                });
-
-            // Set initial view point (shows Asia/Europe)
-            globe.pointOfView({ lat: 30, lng: 50, altitude: 2.2 });
-
-            // Handle resize
-            window.addEventListener('resize', () => {
-                globe.width(container.clientWidth);
-                globe.height(container.clientHeight);
-            });
-        }
-
-        function addMinePins(locations, categoryColor) {
-            const pointsData = locations.map(loc => {
-                let radius = 0.4;
-                let altitude = 0.06;
-                if (loc.type === 'mine') {
-                    radius = 0.5;
-                    altitude = 0.04;
-                } else if (loc.type === 'smelter') {
-                    radius = 0.35;
-                    altitude = 0.07;
-                } else if (loc.type === 'refinery') {
-                    radius = 0.25;
-                    altitude = 0.10;
-                }
-                return {
-                    lat: loc.lat,
-                    lng: loc.lng,
-                    name: loc.name,
-                    country: loc.country,
-                    pct: loc.pct,
-                    type: loc.type,
-                    color: categoryColor,
-                    radius: radius,
-                    altitude: altitude
-                };
+    // ----- Globe setup -----
+    let globe;
+    function initGlobe() {
+        const container = document.getElementById('globeViz');
+        globe = Globe()(container)
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+            .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+            .backgroundColor('rgba(0,0,0,0)')
+            .showAtmosphere(true)
+            .atmosphereColor('#7c87ff')
+            .atmosphereAltitude(0.2)
+            .pointsData([])
+            .pointLat('lat').pointLng('lng')
+            .pointColor(d => d.color)
+            .pointAltitude(d => d.altitude)
+            .pointRadius(d => d.radius)
+            .pointLabel(d => `
+                <div style="background:rgba(11,13,26,0.94);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.16);font-family:'Pretendard Variable',sans-serif;color:#f3f4fb;min-width:180px;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="font-size:12px;font-weight:700;margin-bottom:3px;">${d.typeIcon} ${d.name}</div>
+                    <div style="font-size:11px;color:#8890ad;">${d.country}${d.pct > 0 ? ' · ' + d.pct + '%' : ''} · ${d.typeName}</div>
+                </div>`)
+            .onPointClick(d => {
+                if (d) globe.pointOfView({ lat: d.lat, lng: d.lng, altitude: 1.5 }, 800);
+            })
+            .htmlElementsData([])
+            .htmlLat('lat').htmlLng('lng').htmlAltitude(0.02)
+            .htmlElement(d => {
+                const el = document.createElement('div');
+                el.className = 'marker-label';
+                el.textContent = `${d.typeIcon} ${d.shortName}`;
+                return el;
             });
 
-            const htmlData = locations.map(loc => {
-                const typeIcon = loc.type === 'mine' ? '⛏️' : loc.type === 'smelter' ? '🏭' : '🧪';
-                return {
-                    lat: loc.lat,
-                    lng: loc.lng,
-                    name: `${typeIcon} ${loc.name}`,
-                    color: categoryColor,
-                    type: loc.type
-                };
-            });
+        globe.pointOfView({ lat: 28, lng: 50, altitude: 2.2 });
+        window.addEventListener('resize', resizeGlobe);
+    }
+    function resizeGlobe() {
+        const c = document.getElementById('globeViz');
+        if (globe && c) { globe.width(c.clientWidth); globe.height(c.clientHeight); }
+    }
 
-            globe
-                .pointsData(pointsData)
-                .pointRadius(d => d.radius)
-                .pointAltitude(d => d.altitude);
-
-            globe.htmlElementsData(htmlData);
-
-            // Animate to first location
-            if (locations.length > 0) {
-                globe.pointOfView({ lat: locations[0].lat, lng: locations[0].lng, altitude: 2.0 }, 1000);
-            }
-        }
-
-
-        // UI FUNCTIONS
-        function buildSidebar() {
-            const sidebarContent = document.getElementById('sidebarContent');
-            sidebarContent.innerHTML = '';
-
-            const categoryOrder = ['ferrous', 'heavy', 'light', 'precious', 'rare', 'ree', 'metalloid'];
-
-            categoryOrder.forEach(catId => {
-                const metals = METALS_DATA.filter(m => m.category === catId);
-                if (metals.length === 0) return;
-
-                const group = document.createElement('div');
-                group.className = 'accordion-group';
-
-                const header = document.createElement('div');
-                header.className = 'accordion-header active';
-                header.innerHTML = `<span class="accordion-arrow">▶</span> ${CATEGORY_NAMES[catId]}`;
-
-                const content = document.createElement('div');
-                content.className = 'accordion-content active';
-
-                metals.forEach(metal => {
-                    const item = document.createElement('button');
-                    item.className = `metal-item ${metal.category}`;
-                    item.dataset.metalId = metal.id;
-                    item.innerHTML = `
-                        <div class="metal-symbol">${metal.symbol}</div>
-                        <div class="metal-names">
-                            <div class="metal-name-ko">${metal.name}</div>
-                            <div class="metal-name-en">${metal.nameEn}</div>
-                        </div>
-                    `;
-                    item.addEventListener('click', () => selectMetal(metal));
-                    content.appendChild(item);
-                });
-
-                header.addEventListener('click', () => {
-                    header.classList.toggle('active');
-                    content.classList.toggle('active');
-                    header.querySelector('.accordion-arrow').style.transform =
-                        header.classList.contains('active') ? 'rotate(90deg)' : 'rotate(0deg)';
-                });
-
-                group.appendChild(header);
-                group.appendChild(content);
-                sidebarContent.appendChild(group);
-            });
-        }
-
-        function selectMetal(metal) {
-            selectedMetal = metal;
-
-            // Update sidebar selection
-            document.querySelectorAll('.metal-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            document.querySelector(`[data-metal-id="${metal.id}"]`).classList.add('selected');
-
-            // Show panel
-            const panel = document.getElementById('infoPanel');
-            panel.className = 'info-panel open ' + metal.category;
-
-            // Resize globe after panel animation
-            setTimeout(() => {
-                const container = document.getElementById('globeViz');
-                globe.width(container.clientWidth);
-                globe.height(container.clientHeight);
-            }, 350);
-
-            // Update panel header
-            document.getElementById('panelMetalNameKo').textContent = metal.name;
-            document.getElementById('panelMetalNameEn').textContent = metal.nameEn;
-            document.getElementById('panelMetalSymbol').textContent = metal.symbol;
-            document.getElementById('panelMetalCategory').textContent = CATEGORY_NAMES[metal.category];
-
-            // Ore info
-            document.getElementById('oreNameKo').textContent = metal.ore.name;
-            document.getElementById('oreType').textContent = metal.ore.type;
-
-            // Locations
-            const locationsList = document.getElementById('locationsList');
-            locationsList.innerHTML = metal.locations.map(loc => `
-                <div class="location-item">
-                    <div>
-                        <div class="location-name">${loc.name}</div>
-                        <div class="location-country">${loc.country}</div>
-                    </div>
-                    <div class="location-pct">${loc.pct}%</div>
-                </div>
-            `).join('');
-
-            // Properties
-            const propertiesGrid = document.getElementById('propertiesGrid');
-            const props = [
-                { label: '밀도', value: metal.properties.density },
-                { label: '용융점', value: metal.properties.meltingPoint },
-                { label: '인장강도', value: metal.properties.tensileStrength },
-                { label: '전도율', value: metal.properties.conductivity },
-                { label: '경도', value: metal.properties.hardness },
-                { label: '결정구조', value: metal.properties.crystalStructure }
-            ];
-            propertiesGrid.innerHTML = props.map(p => `
-                <div class="property-card ${metal.category}">
-                    <div class="property-label">${p.label}</div>
-                    <div class="property-value">${p.value}</div>
-                </div>
-            `).join('');
-
-            // Comparative bars
-            const barsGrid = document.getElementById('barsGrid');
-            const barLabels = ['강도', '내식성', '전도성', '경량성', '내열성'];
-            const barKeys = ['strength', 'corrosionRes', 'conductivity', 'lightweight', 'heatRes'];
-            barsGrid.innerHTML = barLabels.map((label, idx) => {
-                const value = metal.bars[barKeys[idx]];
-                return `
-                    <div class="bar-item">
-                        <div class="bar-label">
-                            <span class="bar-label-name">${label}</span>
-                            <span class="bar-label-value">${value}</span>
-                        </div>
-                        <div class="bar-container">
-                            <div class="bar-fill ${metal.category}" style="width: ${value}%"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Process
-            const processList = document.getElementById('processList');
-            processList.innerHTML = metal.process.map((step, idx) => `
-                <div class="process-step">${step}</div>
-                ${idx < metal.process.length - 1 ? '<div class="process-arrow">→</div>' : ''}
-            `).join('');
-
-            // Carbon
-            const carbonGauge = document.getElementById('carbonGauge');
-            let carbonColor = '#4ade80';
-            if (metal.carbon > 5) carbonColor = '#fbbf24';
-            if (metal.carbon > 20) carbonColor = '#f87171';
-            const carbonPercent = Math.min(100, (metal.carbon / 50) * 100);
-            carbonGauge.innerHTML = `
-                <div class="carbon-value">${metal.carbon} kg CO₂/kg</div>
-                <div class="carbon-bar">
-                    <div class="carbon-fill" style="width: ${carbonPercent}%; background-color: ${carbonColor};"></div>
-                </div>
-                <div class="carbon-label">${metal.carbon > 20 ? '높음' : metal.carbon > 5 ? '중간' : '낮음'}</div>
-            `;
-
-            // Applications
-            const appsList = document.getElementById('appsList');
-            appsList.innerHTML = metal.applications.map(app => `
-                <div class="app-chip">${app}</div>
-            `).join('');
-
-            // Story
-            const storySection = document.getElementById('storySection');
-            if (typeof METAL_STORIES !== 'undefined' && METAL_STORIES[metal.id]) {
-                storySection.innerHTML = METAL_STORIES[metal.id].map(story => `
-                    <div class="story-card" style="background:#252540;padding:14px;border-radius:6px;margin-bottom:10px;border-left:3px solid var(--color, #534AB7);">
-                        <div style="font-weight:700;color:#fff;margin-bottom:8px;font-size:13px;">${story.title}</div>
-                        <div style="font-size:12px;color:#bbb;line-height:1.7;">${story.content}</div>
-                    </div>
-                `).join('');
-            } else {
-                storySection.innerHTML = '<div class="story-content" style="color:#666;font-size:12px;">이 금속의 스토리 콘텐츠를 준비 중입니다.</div>';
-            }
-
-            // Add mine pins to globe
-            const categoryColors = {
-                ferrous: '#3C3489', heavy: '#D85A30', light: '#0F6E56',
-                precious: '#EF9F27', rare: '#534AB7', ree: '#1A8A7A', metalloid: '#888780'
-            };
-            addMinePins(metal.locations, categoryColors[metal.category] || '#ffffff');
-        }
-
-        function closePanel() {
-            document.getElementById('infoPanel').classList.remove('open');
-            document.querySelectorAll('.metal-item').forEach(item => {
-                item.classList.remove('selected');
-            });
+    // Render pins based on selected metal + current layer filters
+    function renderGlobePins() {
+        if (!state.selectedMetal) {
             globe.pointsData([]);
             globe.htmlElementsData([]);
-
-            // Resize globe after panel closes
-            setTimeout(() => {
-                const container = document.getElementById('globeViz');
-                globe.width(container.clientWidth);
-                globe.height(container.clientHeight);
-            }, 350);
-
-            selectedMetal = null;
+            return;
         }
-
-        function filterMetals(searchTerm) {
-            const term = searchTerm.toLowerCase();
-            document.querySelectorAll('.metal-item').forEach(item => {
-                const metal = METALS_DATA.find(m => m.id === item.dataset.metalId);
-                const matches = metal.name.includes(term) ||
-                               metal.nameEn.toLowerCase().includes(term) ||
-                               metal.symbol.toLowerCase().includes(term);
-                item.style.display = matches ? 'flex' : 'none';
+        const metal = state.selectedMetal;
+        const points = [];
+        const labels = [];
+        metal.locations.forEach(loc => {
+            const cls = classifyLocation(loc);
+            if (!state.layerOn[cls]) return;
+            const typeColor = TYPE_HEX[cls];
+            const typeIcon = cls === 'mine' ? '⛏️' : cls === 'smelter' ? '🏭' : cls === 'refinery' ? '🧪' : '🏛️';
+            const typeName = cls === 'mine' ? '광산' : cls === 'smelter' ? '제련/제철소' : cls === 'refinery' ? '정련소' : '역사 유적';
+            let radius = 0.38;
+            let altitude = 0.04;
+            if (cls === 'mine') { radius = 0.5; altitude = 0.03; }
+            else if (cls === 'smelter') { radius = 0.38; altitude = 0.06; }
+            else if (cls === 'refinery') { radius = 0.28; altitude = 0.09; }
+            else { radius = 0.25; altitude = 0.02; }
+            points.push({
+                lat: loc.lat, lng: loc.lng,
+                name: loc.name, shortName: loc.name.length > 22 ? loc.name.slice(0,20) + '…' : loc.name,
+                country: loc.country, pct: loc.pct,
+                typeIcon, typeName,
+                color: typeColor,
+                radius, altitude
             });
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initGlobe();
-            buildSidebar();
-
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                filterMetals(e.target.value);
-            });
-
-            document.getElementById('panelCloseBtn').addEventListener('click', closePanel);
+            // Only show text labels for high-importance locations
+            if (loc.pct >= 8 || (cls === 'mine' && loc.pct >= 5)) {
+                labels.push({
+                    lat: loc.lat, lng: loc.lng,
+                    shortName: loc.name.length > 16 ? loc.name.slice(0,14) + '…' : loc.name,
+                    typeIcon
+                });
+            }
         });
-    </script>
+        globe.pointsData(points);
+        globe.htmlElementsData(labels);
+
+        // Update HUD
+        const counts = { mine: 0, smelter: 0, refinery: 0, historic: 0 };
+        metal.locations.forEach(l => counts[classifyLocation(l)]++);
+        document.getElementById('hudMetalName').textContent = metal.name + ' · ' + metal.nameEn;
+        document.getElementById('hudMineCount').textContent = counts.mine;
+        document.getElementById('hudSmelterCount').textContent = counts.smelter;
+        document.getElementById('hudRefineryCount').textContent = counts.refinery + counts.historic;
+    }
+
+    function classifyLocation(loc) {
+        if (loc.pct === 0) return 'historic';
+        return loc.type || 'mine';
+    }
+
+    // ----- Sidebar -----
+    const CAT_ORDER = ['ferrous', 'heavy', 'light', 'precious', 'rare', 'ree', 'metalloid'];
+
+    function buildSidebar() {
+        const root = document.getElementById('sidebarContent');
+        root.innerHTML = '';
+        CAT_ORDER.forEach(catId => {
+            const metals = METALS_DATA.filter(m => m.category === catId);
+            if (!metals.length) return;
+            const group = document.createElement('div');
+            group.className = 'cat-group open';
+            group.dataset.catId = catId;
+
+            const header = document.createElement('button');
+            header.className = 'cat-header';
+            header.innerHTML = `
+                <span class="cat-swatch" style="background:${CATEGORY_COLORS[catId]}"></span>
+                <svg class="cat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <span>${CATEGORY_NAMES[catId]}</span>
+                <span class="cat-count">${metals.length}</span>
+            `;
+            header.addEventListener('click', () => group.classList.toggle('open'));
+
+            const items = document.createElement('div');
+            items.className = 'cat-items';
+
+            metals.forEach(m => {
+                const btn = document.createElement('button');
+                btn.className = 'metal-btn';
+                btn.dataset.metalId = m.id;
+                btn.style.setProperty('--cat-color', CATEGORY_COLORS[m.category]);
+                btn.innerHTML = `
+                    <span class="metal-sym">${m.symbol}</span>
+                    <span class="metal-meta">
+                        <span class="metal-name-ko">${m.name}</span>
+                        <span class="metal-name-en">${m.nameEn}</span>
+                    </span>
+                    <span class="metal-loc-count">${m.locations.length}</span>
+                `;
+                btn.addEventListener('click', () => selectMetal(m.id));
+                items.appendChild(btn);
+            });
+
+            group.appendChild(header);
+            group.appendChild(items);
+            root.appendChild(group);
+        });
+    }
+
+    function applyCategoryFilter() {
+        document.querySelectorAll('.cat-group').forEach(g => {
+            const show = state.categoryFilter === 'all' || g.dataset.catId === state.categoryFilter;
+            g.style.display = show ? '' : 'none';
+        });
+    }
+
+    function applySearch(term) {
+        const q = term.trim().toLowerCase();
+        if (!q) {
+            document.querySelectorAll('.metal-btn').forEach(b => b.style.display = '');
+            document.querySelectorAll('.cat-group').forEach(g => g.style.display = '');
+            applyCategoryFilter();
+            return;
+        }
+        document.querySelectorAll('.cat-group').forEach(g => {
+            let any = false;
+            g.querySelectorAll('.metal-btn').forEach(b => {
+                const m = METALS_DATA.find(x => x.id === b.dataset.metalId);
+                const matches = m.name.toLowerCase().includes(q)
+                    || m.nameEn.toLowerCase().includes(q)
+                    || m.symbol.toLowerCase().includes(q)
+                    || m.locations.some(l => l.name.toLowerCase().includes(q) || l.country.toLowerCase().includes(q))
+                    || m.applications.some(a => a.toLowerCase().includes(q));
+                b.style.display = matches ? '' : 'none';
+                if (matches) any = true;
+            });
+            g.style.display = any ? '' : 'none';
+        });
+    }
+
+    // ----- Select metal -----
+    function selectMetal(metalId) {
+        const metal = METALS_DATA.find(m => m.id === metalId);
+        if (!metal) return;
+        state.selectedMetal = metal;
+        state.storyIdx = 0;
+
+        // Update URL hash
+        history.replaceState(null, '', '#' + metalId);
+
+        // Hide hero
+        document.getElementById('heroEmpty').classList.add('hidden');
+        document.getElementById('globeHud').classList.remove('hidden');
+
+        // Sidebar selection
+        document.querySelectorAll('.metal-btn').forEach(b => b.classList.toggle('active', b.dataset.metalId === metalId));
+
+        // Apply category color to root panel
+        const panel = document.getElementById('infoPanel');
+        panel.style.setProperty('--cat-color', CATEGORY_COLORS[metal.category]);
+        panel.classList.add('open');
+        document.getElementById('app').classList.remove('panel-collapsed');
+
+        // Hero
+        document.getElementById('panelSym').textContent = metal.symbol;
+        document.getElementById('panelTitle').textContent = metal.name;
+        document.getElementById('panelSubtitle').textContent = metal.nameEn;
+        document.getElementById('panelCatTag').textContent = CATEGORY_NAMES[metal.category];
+
+        // Overview tab
+        document.getElementById('oreName').textContent = metal.ore.name;
+        document.getElementById('oreType').textContent = metal.ore.type;
+        document.getElementById('statReserves').textContent = metal.resources.reserves;
+        document.getElementById('statMined').textContent = metal.resources.mined;
+        document.getElementById('statPrice').textContent = metal.resources.price;
+        const chipsEl = document.getElementById('appChips');
+        chipsEl.innerHTML = metal.applications.map(a => `<span class="app-chip">${a}</span>`).join('');
+
+        // Locations
+        renderLocations();
+
+        // Props
+        const propsEl = document.getElementById('propGrid');
+        const propOrder = [
+            ['밀도', metal.properties.density],
+            ['용융점', metal.properties.meltingPoint],
+            ['인장강도', metal.properties.tensileStrength],
+            ['전도율', metal.properties.conductivity],
+            ['경도', metal.properties.hardness],
+            ['결정구조', metal.properties.crystalStructure]
+        ];
+        propsEl.innerHTML = propOrder.map(([l, v]) => `
+            <div class="prop-card">
+                <div class="prop-label">${l}</div>
+                <div class="prop-value">${v}</div>
+            </div>
+        `).join('');
+
+        const barLabels = [['strength', '강도'], ['corrosionRes', '내식성'], ['conductivity', '전도성'], ['lightweight', '경량성'], ['heatRes', '내열성']];
+        document.getElementById('barsList').innerHTML = barLabels.map(([k, lbl]) => {
+            const v = metal.bars[k];
+            return `
+                <div class="bar-row">
+                    <div class="bar-meta">
+                        <span class="bar-meta-name">${lbl}</span>
+                        <span class="bar-meta-val">${v}/100</span>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" style="width:${v}%"></div></div>
+                </div>`;
+        }).join('');
+
+        // Process
+        document.getElementById('procSteps').innerHTML = metal.process.map((s, i) => `
+            <div class="proc-step">
+                <div class="proc-num">${String(i + 1).padStart(2, '0')}</div>
+                <div class="proc-label">${s}</div>
+            </div>
+        `).join('');
+
+        // Carbon
+        const c = metal.carbon;
+        let badge = 'low';
+        let label = '낮음';
+        let color = '#4ade80';
+        if (c > 5) { badge = 'medium'; label = '중간'; color = '#fbbf24'; }
+        if (c > 20) { badge = 'high'; label = '높음'; color = '#f87171'; }
+        const pct = Math.min(100, (c / 50) * 100);
+        document.getElementById('carbonCard').innerHTML = `
+            <div class="carbon-top">
+                <div class="carbon-val">${c}<small> kg CO₂/kg</small></div>
+                <div class="carbon-badge ${badge}">${label}</div>
+            </div>
+            <div class="carbon-track"><div class="carbon-fill" style="width:${pct}%; background:${color};"></div></div>
+            <div class="carbon-scale"><span>0</span><span>25</span><span>50+</span></div>
+        `;
+
+        // Stories
+        renderStory();
+
+        // Globe
+        renderGlobePins();
+        setTimeout(resizeGlobe, 260);
+    }
+
+    // ----- Locations rendering -----
+    function renderLocations() {
+        const metal = state.selectedMetal;
+        if (!metal) return;
+        const q = state.locSearch.trim().toLowerCase();
+        const filter = state.locFilter;
+
+        // Group by country
+        const groups = new Map();
+        metal.locations.forEach(loc => {
+            const cls = classifyLocation(loc);
+            if (filter !== 'all' && filter !== cls) {
+                if (!(filter === 'smelter' && cls === 'refinery')) return;
+            }
+            if (q && !loc.name.toLowerCase().includes(q) && !loc.country.toLowerCase().includes(q)) return;
+            if (!groups.has(loc.country)) groups.set(loc.country, []);
+            groups.get(loc.country).push({ loc, cls });
+        });
+
+        const root = document.getElementById('locGroups');
+        if (groups.size === 0) {
+            root.innerHTML = '<div class="loc-empty">검색 결과가 없습니다</div>';
+            return;
+        }
+
+        // Sort countries by total count desc
+        const sortedEntries = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+        root.innerHTML = sortedEntries.map(([country, items]) => `
+            <div class="loc-group">
+                <div class="loc-group-h">${country} <span style="color:var(--text-4);font-weight:500">${items.length}</span></div>
+                ${items.map(({ loc, cls }) => `
+                    <button class="loc-item" data-lat="${loc.lat}" data-lng="${loc.lng}">
+                        <span class="loc-type-dot ${cls}"></span>
+                        <span class="loc-text">
+                            <span class="loc-name">${loc.name}</span>
+                            <span class="loc-country">${cls === 'mine' ? '광산' : cls === 'smelter' ? '제련/제철소' : cls === 'refinery' ? '정련소' : '역사 유적'}</span>
+                        </span>
+                        <span class="loc-pct">${loc.pct > 0 ? loc.pct + '%' : '—'}</span>
+                    </button>
+                `).join('')}
+            </div>
+        `).join('');
+
+        // Click to fly
+        root.querySelectorAll('.loc-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const lat = parseFloat(el.dataset.lat);
+                const lng = parseFloat(el.dataset.lng);
+                globe.pointOfView({ lat, lng, altitude: 1.3 }, 900);
+            });
+        });
+    }
+
+    // ----- Stories -----
+    function renderStory() {
+        const metal = state.selectedMetal;
+        const card = document.getElementById('storyCard');
+        const count = document.getElementById('storyCount');
+        const pager = document.getElementById('storyPager');
+
+        if (typeof METAL_STORIES === 'undefined' || !METAL_STORIES[metal.id] || !METAL_STORIES[metal.id].length) {
+            card.innerHTML = '<div class="loc-empty">이 금속의 스토리를 준비 중입니다</div>';
+            count.textContent = '0/0';
+            pager.innerHTML = '';
+            return;
+        }
+        const stories = METAL_STORIES[metal.id];
+        if (state.storyIdx >= stories.length) state.storyIdx = 0;
+        const s = stories[state.storyIdx];
+        card.innerHTML = `
+            <div class="story-card">
+                <div class="story-title">${s.title}</div>
+                <div class="story-body">${s.content}</div>
+            </div>
+        `;
+        count.textContent = (state.storyIdx + 1) + '/' + stories.length;
+        pager.innerHTML = stories.map((_, i) =>
+            `<span class="story-dot ${i === state.storyIdx ? 'active' : ''}" data-idx="${i}"></span>`
+        ).join('');
+        pager.querySelectorAll('.story-dot').forEach(d => {
+            d.addEventListener('click', () => {
+                state.storyIdx = parseInt(d.dataset.idx, 10);
+                renderStory();
+            });
+        });
+        document.getElementById('storyPrev').disabled = state.storyIdx === 0;
+        document.getElementById('storyNext').disabled = state.storyIdx >= stories.length - 1;
+    }
+
+    // ----- Close panel -----
+    function closePanel() {
+        document.getElementById('infoPanel').classList.remove('open');
+        document.getElementById('app').classList.add('panel-collapsed');
+        document.querySelectorAll('.metal-btn').forEach(b => b.classList.remove('active'));
+        globe.pointsData([]).htmlElementsData([]);
+        state.selectedMetal = null;
+        document.getElementById('heroEmpty').classList.remove('hidden');
+        document.getElementById('globeHud').classList.add('hidden');
+        history.replaceState(null, '', location.pathname);
+        setTimeout(resizeGlobe, 260);
+    }
+
+    // ----- Theme -----
+    function applyTheme(t) {
+        state.theme = t;
+        document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+        document.querySelector('.icon-moon').classList.toggle('hidden', t === 'light');
+        document.querySelector('.icon-sun').classList.toggle('hidden', t !== 'light');
+        try { localStorage.setItem('ma-theme', t); } catch(e) {}
+    }
+
+    // ----- Event wiring -----
+    function wire() {
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.activeTab = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === state.activeTab));
+            });
+        });
+
+        // Category filter chips
+        document.querySelectorAll('[data-filter]').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('active', c === chip));
+                state.categoryFilter = chip.dataset.filter;
+                applyCategoryFilter();
+            });
+        });
+
+        // Location filter
+        document.querySelectorAll('[data-loc-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-loc-filter]').forEach(b => b.classList.toggle('active', b === btn));
+                state.locFilter = btn.dataset.locFilter;
+                renderLocations();
+            });
+        });
+
+        // Location search
+        document.getElementById('locSearch').addEventListener('input', e => {
+            state.locSearch = e.target.value;
+            renderLocations();
+        });
+
+        // Header search
+        document.getElementById('searchInput').addEventListener('input', e => applySearch(e.target.value));
+
+        // Theme
+        document.getElementById('toggleTheme').addEventListener('click', () => {
+            applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Close panel
+        document.getElementById('panelClose').addEventListener('click', closePanel);
+
+        // Story nav
+        document.getElementById('storyPrev').addEventListener('click', () => {
+            if (state.storyIdx > 0) { state.storyIdx--; renderStory(); }
+        });
+        document.getElementById('storyNext').addEventListener('click', () => {
+            const metal = state.selectedMetal;
+            if (!metal) return;
+            const stories = METAL_STORIES[metal.id] || [];
+            if (state.storyIdx < stories.length - 1) { state.storyIdx++; renderStory(); }
+        });
+
+        // Legend layer toggle
+        document.querySelectorAll('.legend-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const layer = row.dataset.layer;
+                state.layerOn[layer] = !state.layerOn[layer];
+                row.classList.toggle('off', !state.layerOn[layer]);
+                renderGlobePins();
+            });
+        });
+
+        // Hero chips
+        document.querySelectorAll('#heroChips .hero-chip').forEach(c => {
+            c.addEventListener('click', () => selectMetal(c.dataset.metalId));
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', e => {
+            // '/' focus search
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+            if (e.key === 'Escape') {
+                if (document.activeElement.tagName === 'INPUT') {
+                    document.activeElement.blur();
+                } else if (state.selectedMetal) {
+                    closePanel();
+                }
+            }
+            if (state.selectedMetal && state.activeTab === 'stories') {
+                if (e.key === 'ArrowLeft' && state.storyIdx > 0) { state.storyIdx--; renderStory(); }
+                if (e.key === 'ArrowRight') {
+                    const stories = METAL_STORIES[state.selectedMetal.id] || [];
+                    if (state.storyIdx < stories.length - 1) { state.storyIdx++; renderStory(); }
+                }
+            }
+        });
+    }
+
+    // ----- Init -----
+    document.addEventListener('DOMContentLoaded', () => {
+        // Restore theme
+        let t = 'dark';
+        try { t = localStorage.getItem('ma-theme') || 'dark'; } catch(e) {}
+        applyTheme(t);
+
+        initGlobe();
+        buildSidebar();
+        wire();
+
+        // Start collapsed panel (hero visible)
+        document.getElementById('app').classList.add('panel-collapsed');
+        document.getElementById('infoPanel').classList.remove('open');
+
+        // Auto-select from hash
+        const hash = location.hash.replace('#', '');
+        if (hash && METALS_DATA.find(m => m.id === hash)) {
+            selectMetal(hash);
+        }
+    });
+})();
+</script>
 </body>
 </html>
